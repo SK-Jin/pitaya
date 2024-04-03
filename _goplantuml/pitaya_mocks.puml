@@ -1,0 +1,157 @@
+@startuml
+title pitaya_mocks
+namespace mocks {
+    class MockAcceptor << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockAcceptorMockRecorder
+
+        + EXPECT() *MockAcceptorMockRecorder
+        + EnableProxyProtocol() 
+        + GetAddr() string
+        + GetConfiguredAddress() string
+        + GetConnChan() <font color=blue>chan</font> acceptor.PlayerConn
+        + IsRunning() bool
+        + ListenAndServe() 
+        + Stop() 
+
+    }
+    class MockAcceptorMockRecorder << (S,Aquamarine) >> {
+        - mock *MockAcceptor
+
+        + EnableProxyProtocol() *gomock.Call
+        + GetAddr() *gomock.Call
+        + GetConfiguredAddress() *gomock.Call
+        + GetConnChan() *gomock.Call
+        + IsRunning() *gomock.Call
+        + ListenAndServe() *gomock.Call
+        + Stop() *gomock.Call
+
+    }
+    class MockPitaya << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockPitayaMockRecorder
+
+        + EXPECT() *MockPitayaMockRecorder
+        + AddRoute(arg0 string, arg1 router.RoutingFunc) error
+        + Documentation(arg0 bool) (<font color=blue>map</font>[string]<font color=blue>interface</font>{}, error)
+        + GetDieChan() <font color=blue>chan</font> bool
+        + GetMetricsReporters() []metrics.Reporter
+        + GetModule(arg0 string) (interfaces.Module, error)
+        + GetServer() *cluster.Server
+        + GetServerByID(arg0 string) (*cluster.Server, error)
+        + GetServerID() string
+        + GetServers() []*cluster.Server
+        + GetServersByType(arg0 string) (<font color=blue>map</font>[string]*cluster.Server, error)
+        + GetSessionFromCtx(arg0 context.Context) session.Session
+        + GroupAddMember(arg0 context.Context, arg1 string, arg2 string) error
+        + GroupBroadcast(arg0 context.Context, arg1 string, arg2 string, arg3 string, arg4 <font color=blue>interface</font>{}) error
+        + GroupContainsMember(arg0 context.Context, arg1 string, arg2 string) (bool, error)
+        + GroupCountMembers(arg0 context.Context, arg1 string) (int, error)
+        + GroupCreate(arg0 context.Context, arg1 string) error
+        + GroupCreateWithTTL(arg0 context.Context, arg1 string, arg2 time.Duration) error
+        + GroupDelete(arg0 context.Context, arg1 string) error
+        + GroupMembers(arg0 context.Context, arg1 string) ([]string, error)
+        + GroupRemoveAll(arg0 context.Context, arg1 string) error
+        + GroupRemoveMember(arg0 context.Context, arg1 string, arg2 string) error
+        + GroupRenewTTL(arg0 context.Context, arg1 string) error
+        + IsRunning() bool
+        + RPC(arg0 context.Context, arg1 string, arg2 protoiface.MessageV1, arg3 protoiface.MessageV1) error
+        + RPCTo(arg0 context.Context, arg1 string, arg2 string, arg3 protoiface.MessageV1, arg4 protoiface.MessageV1) error
+        + Register(arg0 component.Component, arg1 ...component.Option) 
+        + RegisterModule(arg0 interfaces.Module, arg1 string) error
+        + RegisterModuleAfter(arg0 interfaces.Module, arg1 string) error
+        + RegisterModuleBefore(arg0 interfaces.Module, arg1 string) error
+        + RegisterRPCJob(arg0 worker.RPCJob) error
+        + RegisterRemote(arg0 component.Component, arg1 ...component.Option) 
+        + ReliableRPC(arg0 string, arg1 <font color=blue>map</font>[string]<font color=blue>interface</font>{}, arg2 protoiface.MessageV1, arg3 protoiface.MessageV1) (string, error)
+        + ReliableRPCWithOptions(arg0 string, arg1 <font color=blue>map</font>[string]<font color=blue>interface</font>{}, arg2 protoiface.MessageV1, arg3 protoiface.MessageV1, arg4 *config.EnqueueOpts) (string, error)
+        + SendKickToUsers(arg0 []string, arg1 string) ([]string, error)
+        + SendPushToUsers(arg0 string, arg1 <font color=blue>interface</font>{}, arg2 []string, arg3 string) ([]string, error)
+        + SetDebug(arg0 bool) 
+        + SetDictionary(arg0 <font color=blue>map</font>[string]uint16) error
+        + SetHeartbeatTime(arg0 time.Duration) 
+        + Shutdown() 
+        + Start() 
+        + StartWorker() 
+
+    }
+    class MockPitayaMockRecorder << (S,Aquamarine) >> {
+        - mock *MockPitaya
+
+        + AddRoute(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}) *gomock.Call
+        + Documentation(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + GetDieChan() *gomock.Call
+        + GetMetricsReporters() *gomock.Call
+        + GetModule(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + GetServer() *gomock.Call
+        + GetServerByID(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + GetServerID() *gomock.Call
+        + GetServers() *gomock.Call
+        + GetServersByType(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + GetSessionFromCtx(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + GroupAddMember(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}) *gomock.Call
+        + GroupBroadcast(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}, arg3 <font color=blue>interface</font>{}, arg4 <font color=blue>interface</font>{}) *gomock.Call
+        + GroupContainsMember(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}) *gomock.Call
+        + GroupCountMembers(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}) *gomock.Call
+        + GroupCreate(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}) *gomock.Call
+        + GroupCreateWithTTL(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}) *gomock.Call
+        + GroupDelete(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}) *gomock.Call
+        + GroupMembers(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}) *gomock.Call
+        + GroupRemoveAll(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}) *gomock.Call
+        + GroupRemoveMember(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}) *gomock.Call
+        + GroupRenewTTL(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}) *gomock.Call
+        + IsRunning() *gomock.Call
+        + RPC(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}, arg3 <font color=blue>interface</font>{}) *gomock.Call
+        + RPCTo(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}, arg3 <font color=blue>interface</font>{}, arg4 <font color=blue>interface</font>{}) *gomock.Call
+        + Register(arg0 <font color=blue>interface</font>{}, arg1 ...<font color=blue>interface</font>{}) *gomock.Call
+        + RegisterModule(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}) *gomock.Call
+        + RegisterModuleAfter(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}) *gomock.Call
+        + RegisterModuleBefore(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}) *gomock.Call
+        + RegisterRPCJob(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + RegisterRemote(arg0 <font color=blue>interface</font>{}, arg1 ...<font color=blue>interface</font>{}) *gomock.Call
+        + ReliableRPC(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}, arg3 <font color=blue>interface</font>{}) *gomock.Call
+        + ReliableRPCWithOptions(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}, arg3 <font color=blue>interface</font>{}, arg4 <font color=blue>interface</font>{}) *gomock.Call
+        + SendKickToUsers(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}) *gomock.Call
+        + SendPushToUsers(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}, arg3 <font color=blue>interface</font>{}) *gomock.Call
+        + SetDebug(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + SetDictionary(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + SetHeartbeatTime(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + Shutdown() *gomock.Call
+        + Start() *gomock.Call
+        + StartWorker() *gomock.Call
+
+    }
+    class MockPlayerConn << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockPlayerConnMockRecorder
+
+        + EXPECT() *MockPlayerConnMockRecorder
+        + Close() error
+        + GetNextMessage() ([]byte, error)
+        + LocalAddr() net.Addr
+        + Read(b []byte) (int, error)
+        + RemoteAddr() net.Addr
+        + SetDeadline(t time.Time) error
+        + SetReadDeadline(t time.Time) error
+        + SetWriteDeadline(t time.Time) error
+        + Write(b []byte) (int, error)
+
+    }
+    class MockPlayerConnMockRecorder << (S,Aquamarine) >> {
+        - mock *MockPlayerConn
+
+        + Close() *gomock.Call
+        + GetNextMessage() *gomock.Call
+        + LocalAddr() *gomock.Call
+        + Read(b <font color=blue>interface</font>{}) *gomock.Call
+        + RemoteAddr() *gomock.Call
+        + SetDeadline(t <font color=blue>interface</font>{}) *gomock.Call
+        + SetReadDeadline(t <font color=blue>interface</font>{}) *gomock.Call
+        + SetWriteDeadline(t <font color=blue>interface</font>{}) *gomock.Call
+        + Write(b <font color=blue>interface</font>{}) *gomock.Call
+
+    }
+}
+
+
+@enduml

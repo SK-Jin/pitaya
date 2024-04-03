@@ -1,0 +1,190 @@
+@startuml
+title pitaya_session
+namespace session {
+    class HandshakeClientData << (S,Aquamarine) >> {
+        + Platform string
+        + LibVersion string
+        + BuildNumber string
+        + Version string
+
+    }
+    class HandshakeData << (S,Aquamarine) >> {
+        + Sys HandshakeClientData
+        + User <font color=blue>map</font>[string]<font color=blue>interface</font>{}
+
+    }
+    class ReqInFlight << (S,Aquamarine) >> {
+        - m <font color=blue>map</font>[string]string
+        - mu sync.RWMutex
+
+    }
+    interface Session  {
+        + GetOnCloseCallbacks() []<font color=blue>func</font>() 
+        + GetIsFrontend() bool
+        + GetSubscriptions() []*nats.go.Subscription
+        + SetOnCloseCallbacks(callbacks []<font color=blue>func</font>() ) 
+        + SetIsFrontend(isFrontend bool) 
+        + SetSubscriptions(subscriptions []*nats.go.Subscription) 
+        + HasRequestsInFlight() bool
+        + GetRequestsInFlight() ReqInFlight
+        + SetRequestInFlight(reqID string, reqData string, inFlight bool) 
+        + Push(route string, v <font color=blue>interface</font>{}) error
+        + ResponseMID(ctx context.Context, mid uint, v <font color=blue>interface</font>{}, err ...bool) error
+        + ID() int64
+        + UID() string
+        + GetData() <font color=blue>map</font>[string]<font color=blue>interface</font>{}
+        + SetData(data <font color=blue>map</font>[string]<font color=blue>interface</font>{}) error
+        + GetDataEncoded() []byte
+        + SetDataEncoded(encodedData []byte) error
+        + SetFrontendData(frontendID string, frontendSessionID int64) 
+        + Bind(ctx context.Context, uid string) error
+        + Kick(ctx context.Context) error
+        + OnClose(c <font color=blue>func</font>() ) error
+        + Close() 
+        + RemoteAddr() net.Addr
+        + Remove(key string) error
+        + Set(key string, value <font color=blue>interface</font>{}) error
+        + HasKey(key string) bool
+        + Get(key string) <font color=blue>interface</font>{}
+        + Int(key string) int
+        + Int8(key string) int8
+        + Int16(key string) int16
+        + Int32(key string) int32
+        + Int64(key string) int64
+        + Uint(key string) uint
+        + Uint8(key string) uint8
+        + Uint16(key string) uint16
+        + Uint32(key string) uint32
+        + Uint64(key string) uint64
+        + Float32(key string) float32
+        + Float64(key string) float64
+        + String(key string) string
+        + Value(key string) <font color=blue>interface</font>{}
+        + PushToFront(ctx context.Context) error
+        + Clear() 
+        + SetHandshakeData(data *HandshakeData) 
+        + GetHandshakeData() *HandshakeData
+        + ValidateHandshake(data *HandshakeData) error
+        + GetHandshakeValidators() <font color=blue>map</font>[string]<font color=blue>func</font>(*HandshakeData) error
+
+    }
+    interface SessionPool  {
+        + NewSession(entity networkentity.NetworkEntity, frontend bool, UID ...string) Session
+        + GetSessionCount() int64
+        + GetSessionCloseCallbacks() []<font color=blue>func</font>(Session) 
+        + GetSessionByUID(uid string) Session
+        + GetSessionByID(id int64) Session
+        + OnSessionBind(f <font color=blue>func</font>(context.Context, Session) error) 
+        + OnAfterSessionBind(f <font color=blue>func</font>(context.Context, Session) error) 
+        + OnSessionClose(f <font color=blue>func</font>(Session) ) 
+        + CloseAll() 
+        + AddHandshakeValidator(name string, f <font color=blue>func</font>(*HandshakeData) error) 
+
+    }
+    class sessionIDService << (S,Aquamarine) >> {
+        - sid int64
+
+        - sessionID() int64
+
+    }
+    class sessionImpl << (S,Aquamarine) >> {
+        - id int64
+        - uid string
+        - lastTime int64
+        - entity networkentity.NetworkEntity
+        - data <font color=blue>map</font>[string]<font color=blue>interface</font>{}
+        - handshakeData *HandshakeData
+        - handshakeValidators <font color=blue>map</font>[string]<font color=blue>func</font>(*HandshakeData) error
+        - encodedData []byte
+        - frontendID string
+        - frontendSessionID int64
+        - requestsInFlight ReqInFlight
+        - pool *sessionPoolImpl
+
+        + OnCloseCallbacks []<font color=blue>func</font>() 
+        + IsFrontend bool
+        + Subscriptions []*nats.go.Subscription
+
+        - updateEncodedData() error
+        - bindInFront(ctx context.Context) error
+        - sendRequestToFront(ctx context.Context, route string, includeData bool) error
+
+        + GetOnCloseCallbacks() []<font color=blue>func</font>() 
+        + GetIsFrontend() bool
+        + GetSubscriptions() []*nats.go.Subscription
+        + SetOnCloseCallbacks(callbacks []<font color=blue>func</font>() ) 
+        + SetIsFrontend(isFrontend bool) 
+        + SetSubscriptions(subscriptions []*nats.go.Subscription) 
+        + Push(route string, v <font color=blue>interface</font>{}) error
+        + ResponseMID(ctx context.Context, mid uint, v <font color=blue>interface</font>{}, err ...bool) error
+        + ID() int64
+        + UID() string
+        + GetData() <font color=blue>map</font>[string]<font color=blue>interface</font>{}
+        + SetData(data <font color=blue>map</font>[string]<font color=blue>interface</font>{}) error
+        + GetDataEncoded() []byte
+        + SetDataEncoded(encodedData []byte) error
+        + SetFrontendData(frontendID string, frontendSessionID int64) 
+        + Bind(ctx context.Context, uid string) error
+        + Kick(ctx context.Context) error
+        + OnClose(c <font color=blue>func</font>() ) error
+        + Close() 
+        + RemoteAddr() net.Addr
+        + Remove(key string) error
+        + Set(key string, value <font color=blue>interface</font>{}) error
+        + HasKey(key string) bool
+        + Get(key string) <font color=blue>interface</font>{}
+        + Int(key string) int
+        + Int8(key string) int8
+        + Int16(key string) int16
+        + Int32(key string) int32
+        + Int64(key string) int64
+        + Uint(key string) uint
+        + Uint8(key string) uint8
+        + Uint16(key string) uint16
+        + Uint32(key string) uint32
+        + Uint64(key string) uint64
+        + Float32(key string) float32
+        + Float64(key string) float64
+        + String(key string) string
+        + Value(key string) <font color=blue>interface</font>{}
+        + PushToFront(ctx context.Context) error
+        + Clear() 
+        + SetHandshakeData(data *HandshakeData) 
+        + GetHandshakeData() *HandshakeData
+        + GetHandshakeValidators() <font color=blue>map</font>[string]<font color=blue>func</font>(*HandshakeData) error
+        + ValidateHandshake(data *HandshakeData) error
+        + HasRequestsInFlight() bool
+        + GetRequestsInFlight() ReqInFlight
+        + SetRequestInFlight(reqID string, reqData string, inFlight bool) 
+
+    }
+    class sessionPoolImpl << (S,Aquamarine) >> {
+        - sessionBindCallbacks []<font color=blue>func</font>(context.Context, Session) error
+        - afterBindCallbacks []<font color=blue>func</font>(context.Context, Session) error
+        - handshakeValidators <font color=blue>map</font>[string]<font color=blue>func</font>(*HandshakeData) error
+        - sessionsByUID sync.Map
+        - sessionsByID sync.Map
+        - sessionIDSvc *sessionIDService
+
+        + SessionCloseCallbacks []<font color=blue>func</font>(Session) 
+        + SessionCount int64
+
+        + NewSession(entity networkentity.NetworkEntity, frontend bool, UID ...string) Session
+        + GetSessionCount() int64
+        + GetSessionCloseCallbacks() []<font color=blue>func</font>(Session) 
+        + GetSessionByUID(uid string) Session
+        + GetSessionByID(id int64) Session
+        + OnSessionBind(f <font color=blue>func</font>(context.Context, Session) error) 
+        + OnAfterSessionBind(f <font color=blue>func</font>(context.Context, Session) error) 
+        + OnSessionClose(f <font color=blue>func</font>(Session) ) 
+        + CloseAll() 
+        + AddHandshakeValidator(name string, f <font color=blue>func</font>(*HandshakeData) error) 
+
+    }
+}
+"sync.RWMutex" *-- "session.sessionImpl"
+
+"session.Session" <|-- "session.sessionImpl"
+"session.SessionPool" <|-- "session.sessionPoolImpl"
+
+@enduml

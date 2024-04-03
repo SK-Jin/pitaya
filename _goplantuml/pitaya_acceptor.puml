@@ -1,0 +1,129 @@
+@startuml
+title pitaya_acceptor
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: false
+end legend
+namespace acceptor {
+    interface Acceptor  {
+        + ListenAndServe() 
+        + Stop() 
+        + GetAddr() string
+        + GetConnChan() <font color=blue>chan</font> PlayerConn
+        + EnableProxyProtocol() 
+        + IsRunning() bool
+        + GetConfiguredAddress() string
+
+    }
+    class Conn << (S,Aquamarine) >> {
+        - dstAddr *net.Addr
+        - srcAddr *net.Addr
+        - once sync.Once
+        - proxyProtocolEnabled *bool
+
+        - checkPrefix() error
+
+        + LocalAddr() net.Addr
+        + RemoteAddr() net.Addr
+
+    }
+    interface PlayerConn  {
+        + GetNextMessage() ([]byte, error)
+        + RemoteAddr() net.Addr
+
+    }
+    class ProxyProtocolListener << (S,Aquamarine) >> {
+        - proxyProtocolEnabled *bool
+
+        + Accept() (net.Conn, error)
+
+    }
+    class TCPAcceptor << (S,Aquamarine) >> {
+        - addr string
+        - connChan <font color=blue>chan</font> PlayerConn
+        - listener net.Listener
+        - running bool
+        - certs []tls.Certificate
+        - proxyProtocol bool
+
+        - hasTLSCertificates() bool
+        - createBaseListener() net.Listener
+        - listenAndServeTLS(listener net.Listener) net.Listener
+        - serve() 
+
+        + GetAddr() string
+        + GetConnChan() <font color=blue>chan</font> PlayerConn
+        + Stop() 
+        + ListenAndServe() 
+        + ListenAndServeTLS(cert string, key string) 
+        + EnableProxyProtocol() 
+        + IsRunning() bool
+        + GetConfiguredAddress() string
+
+    }
+    class WSAcceptor << (S,Aquamarine) >> {
+        - addr string
+        - connChan <font color=blue>chan</font> PlayerConn
+        - listener net.Listener
+        - certFile string
+        - keyFile string
+        - running bool
+
+        - hasTLSCertificates() bool
+        - serve(upgrader *websocket.Upgrader) 
+
+        + IsRunning() bool
+        + GetConfiguredAddress() string
+        + GetAddr() string
+        + GetConnChan() <font color=blue>chan</font> PlayerConn
+        + EnableProxyProtocol() 
+        + ListenAndServe() 
+        + ListenAndServeTLS(cert string, key string) 
+        + Stop() 
+
+    }
+    class WSConn << (S,Aquamarine) >> {
+        - conn *websocket.Conn
+        - typ int
+        - reader io.Reader
+
+        + GetNextMessage() ([]byte, error)
+        + Read(b []byte) (int, error)
+        + Write(b []byte) (int, error)
+        + Close() error
+        + LocalAddr() net.Addr
+        + RemoteAddr() net.Addr
+        + SetDeadline(t time.Time) error
+        + SetReadDeadline(t time.Time) error
+        + SetWriteDeadline(t time.Time) error
+
+    }
+    class connHandler << (S,Aquamarine) >> {
+        - upgrader *websocket.Upgrader
+        - connChan <font color=blue>chan</font> PlayerConn
+
+        + ServeHTTP(rw http.ResponseWriter, r *http.Request) 
+
+    }
+    class tcpPlayerConn << (S,Aquamarine) >> {
+        - remoteAddr net.Addr
+
+        + RemoteAddr() net.Addr
+        + GetNextMessage() ([]byte, error)
+
+    }
+}
+"net.Conn" *-- "extends""acceptor.Conn"
+"net.Listener" *-- "extends""acceptor.ProxyProtocolListener"
+"net.Conn" *-- "extends""acceptor.tcpPlayerConn"
+
+"acceptor.Acceptor" <|-- "implements""acceptor.TCPAcceptor"
+"acceptor.Acceptor" <|-- "implements""acceptor.WSAcceptor"
+"acceptor.PlayerConn" <|-- "implements""acceptor.WSConn"
+"acceptor.PlayerConn" <|-- "implements""acceptor.tcpPlayerConn"
+
+
+@enduml

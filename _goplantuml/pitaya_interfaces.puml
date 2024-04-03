@@ -1,0 +1,19 @@
+@startuml
+title pitaya_interfaces
+namespace interfaces {
+    interface BindingStorage  {
+        + GetUserFrontendID(uid string, frontendType string) (string, error)
+        + PutBinding(uid string) error
+
+    }
+    interface Module  {
+        + Init() error
+        + AfterInit() 
+        + BeforeShutdown() 
+        + Shutdown() error
+
+    }
+}
+
+
+@enduml

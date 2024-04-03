@@ -1,0 +1,55 @@
+@startuml
+title pitaya_metrics
+namespace metrics {
+    interface Client  {
+        + Count(name string, value int64, tags []string, rate float64) error
+        + Gauge(name string, value float64, tags []string, rate float64) error
+        + TimeInMilliseconds(name string, value float64, tags []string, rate float64) error
+
+    }
+    class PrometheusReporter << (S,Aquamarine) >> {
+        - serverType string
+        - game string
+        - countReportersMap <font color=blue>map</font>[string]*prometheus.CounterVec
+        - summaryReportersMap <font color=blue>map</font>[string]*prometheus.SummaryVec
+        - histogramReportersMap <font color=blue>map</font>[string]*prometheus.HistogramVec
+        - gaugeReportersMap <font color=blue>map</font>[string]*prometheus.GaugeVec
+        - additionalLabels <font color=blue>map</font>[string]string
+
+        - registerCustomMetrics(constLabels <font color=blue>map</font>[string]string, additionalLabelsKeys []string, spec *models.CustomMetricsSpec) 
+        - registerMetrics(constLabels <font color=blue>map</font>[string]string, additionalLabels <font color=blue>map</font>[string]string, spec *models.CustomMetricsSpec) 
+        - ensureLabels(labels <font color=blue>map</font>[string]string) <font color=blue>map</font>[string]string
+
+        + ReportSummary(metric string, labels <font color=blue>map</font>[string]string, value float64) error
+        + ReportHistogram(metric string, labels <font color=blue>map</font>[string]string, value float64) error
+        + ReportCount(metric string, labels <font color=blue>map</font>[string]string, count float64) error
+        + ReportGauge(metric string, labels <font color=blue>map</font>[string]string, value float64) error
+
+    }
+    interface Reporter  {
+        + ReportCount(metric string, tags <font color=blue>map</font>[string]string, count float64) error
+        + ReportSummary(metric string, tags <font color=blue>map</font>[string]string, value float64) error
+        + ReportHistogram(metric string, tags <font color=blue>map</font>[string]string, value float64) error
+        + ReportGauge(metric string, tags <font color=blue>map</font>[string]string, value float64) error
+
+    }
+    class StatsdReporter << (S,Aquamarine) >> {
+        - client Client
+        - rate float64
+        - serverType string
+        - defaultTags []string
+
+        - buildDefaultTags(tagsMap <font color=blue>map</font>[string]string) 
+
+        + ReportCount(metric string, tagsMap <font color=blue>map</font>[string]string, count float64) error
+        + ReportGauge(metric string, tagsMap <font color=blue>map</font>[string]string, value float64) error
+        + ReportSummary(metric string, tagsMap <font color=blue>map</font>[string]string, value float64) error
+        + ReportHistogram(metric string, tagsMap <font color=blue>map</font>[string]string, value float64) error
+
+    }
+}
+
+"metrics.Reporter" <|-- "metrics.PrometheusReporter"
+"metrics.Reporter" <|-- "metrics.StatsdReporter"
+
+@enduml

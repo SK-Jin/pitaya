@@ -1,0 +1,89 @@
+@startuml
+title pitaya_service
+namespace service {
+    class HandlerPool << (S,Aquamarine) >> {
+        - handlers <font color=blue>map</font>[string]*component.Handler
+
+        - getHandler(rt *route.Route) (*component.Handler, error)
+
+        + Register(serviceName string, name string, handler *component.Handler) 
+        + GetHandlers() <font color=blue>map</font>[string]*component.Handler
+        + ProcessHandlerMessage(ctx context.Context, rt *route.Route, serializer serialize.Serializer, handlerHooks *pipeline.HandlerHooks, session session.Session, data []byte, msgTypeIface <font color=blue>interface</font>{}, remote bool) ([]byte, error)
+
+    }
+    class HandlerService << (S,Aquamarine) >> {
+        - chLocalProcess <font color=blue>chan</font> unhandledMessage
+        - chRemoteProcess <font color=blue>chan</font> unhandledMessage
+        - decoder codec.PacketDecoder
+        - remoteService *RemoteService
+        - serializer serialize.Serializer
+        - server *cluster.Server
+        - services <font color=blue>map</font>[string]*component.Service
+        - metricsReporters []metrics.Reporter
+        - agentFactory agent.AgentFactory
+        - handlerPool *HandlerPool
+        - handlers <font color=blue>map</font>[string]*component.Handler
+
+        - processPacket(a agent.Agent, p *packet.Packet) error
+        - processMessage(a agent.Agent, msg *message.Message) 
+        - localProcess(ctx context.Context, a agent.Agent, route *route.Route, msg *message.Message) 
+
+        + Dispatch(thread int) 
+        + Register(comp component.Component, opts []component.Option) error
+        + Handle(conn acceptor.PlayerConn) 
+        + DumpServices() 
+        + Docs(getPtrNames bool) (<font color=blue>map</font>[string]<font color=blue>interface</font>{}, error)
+
+    }
+    class RemoteService << (S,Aquamarine) >> {
+        - rpcServer cluster.RPCServer
+        - serviceDiscovery cluster.ServiceDiscovery
+        - serializer serialize.Serializer
+        - encoder codec.PacketEncoder
+        - rpcClient cluster.RPCClient
+        - services <font color=blue>map</font>[string]*component.Service
+        - router *router.Router
+        - messageEncoder message.Encoder
+        - server *cluster.Server
+        - remoteBindingListeners []cluster.RemoteBindingListener
+        - remoteHooks *pipeline.RemoteHooks
+        - sessionPool session.SessionPool
+        - handlerPool *HandlerPool
+        - remotes <font color=blue>map</font>[string]*component.Remote
+
+        - remoteProcess(ctx context.Context, server *cluster.Server, a agent.Agent, route *route.Route, msg *message.Message) 
+        - handleRPCUser(ctx context.Context, req *protos.Request, rt *route.Route) *protos.Response
+        - handleRPCSys(ctx context.Context, req *protos.Request, rt *route.Route) *protos.Response
+        - remoteCall(ctx context.Context, server *cluster.Server, rpcType protos.RPCType, route *route.Route, session session.Session, msg *message.Message) (*protos.Response, error)
+
+        + AddRemoteBindingListener(bindingListener cluster.RemoteBindingListener) 
+        + Call(ctx context.Context, req *protos.Request) (*protos.Response, error)
+        + SessionBindRemote(ctx context.Context, msg *protos.BindMsg) (*protos.Response, error)
+        + PushToUser(ctx context.Context, push *protos.Push) (*protos.Response, error)
+        + KickUser(ctx context.Context, kick *protos.KickMsg) (*protos.KickAnswer, error)
+        + DoRPC(ctx context.Context, serverID string, route *route.Route, protoData []byte) (*protos.Response, error)
+        + RPC(ctx context.Context, serverID string, route *route.Route, reply proto.Message, arg proto.Message) error
+        + Register(comp component.Component, opts []component.Option) error
+        + DumpServices() 
+        + Docs(getPtrNames bool) (<font color=blue>map</font>[string]<font color=blue>interface</font>{}, error)
+
+    }
+    class baseService << (S,Aquamarine) >> {
+        - handlerHooks *pipeline.HandlerHooks
+
+        + SetHandlerHooks(handlerHooks *pipeline.HandlerHooks) 
+
+    }
+    class unhandledMessage << (S,Aquamarine) >> {
+        - ctx context.Context
+        - agent agent.Agent
+        - route *route.Route
+        - msg *message.Message
+
+    }
+}
+"service.baseService" *-- "service.HandlerService"
+"service.baseService" *-- "service.RemoteService"
+
+
+@enduml

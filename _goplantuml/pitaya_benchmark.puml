@@ -1,0 +1,51 @@
+@startuml
+title pitaya_benchmark
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: false
+end legend
+namespace testdata {
+    class Ping << (S,Aquamarine) >> {
+        + Content string
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetContent() string
+
+    }
+    class Pong << (S,Aquamarine) >> {
+        + Content string
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetContent() string
+
+    }
+}
+
+
+
+@enduml

@@ -1,0 +1,21 @@
+@startuml
+title pitaya_pitaya-cli
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: false
+end legend
+namespace main {
+    interface Log  {
+        + Print( ...<font color=blue>interface</font>{}) 
+        + Println( ...<font color=blue>interface</font>{}) 
+        + Printf( string,  ...<font color=blue>interface</font>{}) 
+
+    }
+}
+
+
+
+@enduml

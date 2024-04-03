@@ -1,0 +1,16 @@
+@startuml
+title pitaya_remote
+namespace remote {
+    class Sys << (S,Aquamarine) >> {
+        - sessionPool session.SessionPool
+
+        + BindSession(ctx context.Context, sessionData *protos.Session) (*protos.Response, error)
+        + PushSession(ctx context.Context, sessionData *protos.Session) (*protos.Response, error)
+        + Kick(ctx context.Context, msg *protos.KickMsg) (*protos.KickAnswer, error)
+
+    }
+}
+"component.Base" *-- "remote.Sys"
+
+
+@enduml

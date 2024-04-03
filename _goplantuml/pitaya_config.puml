@@ -1,0 +1,192 @@
+@startuml
+title pitaya_config
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: false
+end legend
+namespace config {
+    class ClusterConfig << (S,Aquamarine) >> {
+        + Info InfoRetrieverConfig
+        + RPC ClusterRPCConfig
+        + SD ClusterSDConfig
+
+    }
+    class ClusterRPCConfig << (S,Aquamarine) >> {
+        + Client <font color=blue>struct</font>{GRPCClientConfig, NatsRPCClientConfig}
+        + Server <font color=blue>struct</font>{GRPCServerConfig, NatsRPCServerConfig}
+
+    }
+    class ClusterSDConfig << (S,Aquamarine) >> {
+        + Etcd EtcdServiceDiscoveryConfig
+
+    }
+    class Config << (S,Aquamarine) >> {
+        - fillDefaultValues() 
+
+        + UnmarshalKey(key string, rawVal <font color=blue>interface</font>{}) error
+
+    }
+    class ETCDBindingConfig << (S,Aquamarine) >> {
+        + DialTimeout time.Duration
+        + Endpoints []string
+        + Prefix string
+        + LeaseTTL time.Duration
+
+    }
+    class EnqueueOpts << (S,Aquamarine) >> {
+        + Enabled bool
+        + Max int
+        + Exponential int
+        + MinDelay int
+        + MaxDelay int
+        + MaxRandom int
+
+    }
+    class EtcdGroupServiceConfig << (S,Aquamarine) >> {
+        + DialTimeout time.Duration
+        + Endpoints []string
+        + Prefix string
+        + TransactionTimeout time.Duration
+
+    }
+    class EtcdServiceDiscoveryConfig << (S,Aquamarine) >> {
+        + Endpoints []string
+        + User string
+        + Pass string
+        + DialTimeout time.Duration
+        + Prefix string
+        + Heartbeat <font color=blue>struct</font>{time.Duration, bool}
+        + SyncServers <font color=blue>struct</font>{time.Duration, int}
+        + Revoke <font color=blue>struct</font>{time.Duration}
+        + GrantLease <font color=blue>struct</font>{time.Duration, int, time.Duration}
+        + Shutdown <font color=blue>struct</font>{time.Duration}
+        + ServerTypesBlacklist []string
+
+    }
+    class GRPCClientConfig << (S,Aquamarine) >> {
+        + DialTimeout time.Duration
+        + LazyConnection bool
+        + RequestTimeout time.Duration
+
+    }
+    class GRPCServerConfig << (S,Aquamarine) >> {
+        + Port int
+
+    }
+    class GroupsConfig << (S,Aquamarine) >> {
+        + Etcd EtcdGroupServiceConfig
+        + Memory MemoryGroupConfig
+
+    }
+    class InfoRetrieverConfig << (S,Aquamarine) >> {
+        + Region string
+
+    }
+    class MemoryGroupConfig << (S,Aquamarine) >> {
+        + TickDuration time.Duration
+
+    }
+    class MetricsConfig << (S,Aquamarine) >> {
+        + Period time.Duration
+        + Game string
+        + AdditionalLabels <font color=blue>map</font>[string]string
+        + ConstLabels <font color=blue>map</font>[string]string
+        + Custom models.CustomMetricsSpec
+        + Prometheus *PrometheusConfig
+        + Statsd *StatsdConfig
+
+    }
+    class ModulesConfig << (S,Aquamarine) >> {
+        + BindingStorage <font color=blue>struct</font>{ETCDBindingConfig}
+
+    }
+    class NatsRPCClientConfig << (S,Aquamarine) >> {
+        + Connect string
+        + MaxReconnectionRetries int
+        + RequestTimeout time.Duration
+        + ConnectionTimeout time.Duration
+
+    }
+    class NatsRPCServerConfig << (S,Aquamarine) >> {
+        + Connect string
+        + MaxReconnectionRetries int
+        + Buffer <font color=blue>struct</font>{int, int}
+        + Services int
+        + ConnectionTimeout time.Duration
+
+    }
+    class PitayaConfig << (S,Aquamarine) >> {
+        + SerializerType uint16
+        + DefaultPipelines <font color=blue>struct</font>{<font color=blue>struct</font>{bool}}
+        + Modules ModulesConfig
+        + Heartbeat <font color=blue>struct</font>{time.Duration}
+        + Handler <font color=blue>struct</font>{<font color=blue>struct</font>{bool}}
+        + Buffer <font color=blue>struct</font>{<font color=blue>struct</font>{int}, <font color=blue>struct</font>{int, int}}
+        + Concurrency <font color=blue>struct</font>{<font color=blue>struct</font>{int}}
+        + Session <font color=blue>struct</font>{bool, <font color=blue>struct</font>{bool, time.Duration, time.Duration}}
+        + Acceptor <font color=blue>struct</font>{bool}
+        + Conn <font color=blue>struct</font>{RateLimitingConfig}
+        + Metrics MetricsConfig
+        + Cluster ClusterConfig
+        + Groups GroupsConfig
+        + Worker WorkerConfig
+
+    }
+    class PrometheusConfig << (S,Aquamarine) >> {
+        + Port int
+        + Enabled bool
+
+    }
+    class RateLimitingConfig << (S,Aquamarine) >> {
+        + Limit int
+        + Interval time.Duration
+        + ForceDisable bool
+
+    }
+    class StatsdConfig << (S,Aquamarine) >> {
+        + Enabled bool
+        + Host string
+        + Prefix string
+        + Rate float64
+
+    }
+    class WorkerConfig << (S,Aquamarine) >> {
+        + Redis <font color=blue>struct</font>{string, string, string}
+        + Namespace string
+        + Concurrency int
+        + Retry EnqueueOpts
+
+    }
+}
+"viper.Viper" *-- "extends""config.Config"
+
+
+"config.ClusterConfig""uses" o-- "config.ClusterRPCConfig"
+"config.ClusterConfig""uses" o-- "config.ClusterSDConfig"
+"config.ClusterConfig""uses" o-- "config.InfoRetrieverConfig"
+"config.ClusterSDConfig""uses" o-- "config.EtcdServiceDiscoveryConfig"
+"config.ETCDBindingConfig""uses" o-- "time.Duration"
+"config.EtcdGroupServiceConfig""uses" o-- "time.Duration"
+"config.EtcdServiceDiscoveryConfig""uses" o-- "time.Duration"
+"config.GRPCClientConfig""uses" o-- "time.Duration"
+"config.GroupsConfig""uses" o-- "config.EtcdGroupServiceConfig"
+"config.GroupsConfig""uses" o-- "config.MemoryGroupConfig"
+"config.MemoryGroupConfig""uses" o-- "time.Duration"
+"config.MetricsConfig""uses" o-- "config.PrometheusConfig"
+"config.MetricsConfig""uses" o-- "config.StatsdConfig"
+"config.MetricsConfig""uses" o-- "models.CustomMetricsSpec"
+"config.MetricsConfig""uses" o-- "time.Duration"
+"config.NatsRPCClientConfig""uses" o-- "time.Duration"
+"config.NatsRPCServerConfig""uses" o-- "time.Duration"
+"config.PitayaConfig""uses" o-- "config.ClusterConfig"
+"config.PitayaConfig""uses" o-- "config.GroupsConfig"
+"config.PitayaConfig""uses" o-- "config.MetricsConfig"
+"config.PitayaConfig""uses" o-- "config.ModulesConfig"
+"config.PitayaConfig""uses" o-- "config.WorkerConfig"
+"config.RateLimitingConfig""uses" o-- "time.Duration"
+"config.WorkerConfig""uses" o-- "config.EnqueueOpts"
+
+@enduml

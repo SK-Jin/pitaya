@@ -1,0 +1,42 @@
+@startuml
+title pitaya_worker
+namespace worker {
+    interface RPCJob  {
+        + ServerDiscovery(route string, rpcMetadata <font color=blue>map</font>[string]<font color=blue>interface</font>{}) (string, error)
+        + RPC(ctx context.Context, serverID string, routeStr string, reply proto.Message, arg proto.Message) error
+        + GetArgReply(route string) (proto.Message, proto.Message, error)
+
+    }
+    class Worker << (S,Aquamarine) >> {
+        - concurrency int
+        - registered bool
+        - opts *config.EnqueueOpts
+        - started bool
+
+        - parsedRPCJob(rpcJob RPCJob) <font color=blue>func</font>(*go-workers.Msg) 
+        - enqueueOptions(opts *config.EnqueueOpts) go-workers.EnqueueOptions
+        - unmarshalRouteMetadata(jobArg *go-workers.Msg) ([]byte, *rpcRoute, error)
+
+        + SetLogger(logger interfaces.Logger) 
+        + Start() 
+        + Started() bool
+        + EnqueueRPC(routeStr string, metadata <font color=blue>map</font>[string]<font color=blue>interface</font>{}, reply proto.Message, arg proto.Message) (string, error)
+        + EnqueueRPCWithOptions(routeStr string, metadata <font color=blue>map</font>[string]<font color=blue>interface</font>{}, reply proto.Message, arg proto.Message, opts *config.EnqueueOpts) (string, error)
+        + RegisterRPCJob(rpcJob RPCJob) error
+
+    }
+    class rpcInfo << (S,Aquamarine) >> {
+        + Route string
+        + Metadata <font color=blue>map</font>[string]<font color=blue>interface</font>{}
+        + Arg proto.Message
+        + Reply proto.Message
+
+    }
+    class rpcRoute << (S,Aquamarine) >> {
+        + Route string
+
+    }
+}
+
+
+@enduml

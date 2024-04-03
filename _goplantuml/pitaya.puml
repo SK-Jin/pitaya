@@ -1,0 +1,205 @@
+@startuml
+title pitaya
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: false
+end legend
+namespace pitaya {
+    class App << (S,Aquamarine) >> {
+        - acceptors []acceptor.Acceptor
+        - config config.PitayaConfig
+        - debug bool
+        - dieChan <font color=blue>chan</font> bool
+        - heartbeat time.Duration
+        - onSessionBind <font color=blue>func</font>(session.Session) 
+        - router *router.Router
+        - rpcClient cluster.RPCClient
+        - rpcServer cluster.RPCServer
+        - metricsReporters []metrics.Reporter
+        - running bool
+        - serializer serialize.Serializer
+        - server *cluster.Server
+        - serverMode ServerMode
+        - serviceDiscovery cluster.ServiceDiscovery
+        - startAt time.Time
+        - worker *worker.Worker
+        - remoteService *service.RemoteService
+        - handlerService *service.HandlerService
+        - handlerComp []regComp
+        - remoteComp []regComp
+        - modulesMap <font color=blue>map</font>[string]interfaces.Module
+        - modulesArr []moduleWrapper
+        - groups groups.GroupService
+        - sessionPool session.SessionPool
+
+        - initSysRemotes() 
+        - periodicMetrics() 
+        - listen() 
+        - startupComponents() 
+        - shutdownComponents() 
+        - sendDataToMembers(uids []string, frontendType string, route string, v <font color=blue>interface</font>{}) error
+        - alreadyRegistered(name string) error
+        - startModules() 
+        - shutdownModules() 
+        - doSendRPC(ctx context.Context, serverID string, routeStr string, reply proto.Message, arg proto.Message) error
+
+        + GetDieChan() <font color=blue>chan</font> bool
+        + SetDebug(debug bool) 
+        + SetHeartbeatTime(interval time.Duration) 
+        + GetServerID() string
+        + GetMetricsReporters() []metrics.Reporter
+        + GetServer() *cluster.Server
+        + GetServerByID(id string) (*cluster.Server, error)
+        + GetServersByType(t string) (<font color=blue>map</font>[string]*cluster.Server, error)
+        + GetServers() []*cluster.Server
+        + IsRunning() bool
+        + Start() 
+        + SetDictionary(dict <font color=blue>map</font>[string]uint16) error
+        + AddRoute(serverType string, routingFunction router.RoutingFunc) error
+        + Shutdown() 
+        + GetSessionFromCtx(ctx context.Context) session.Session
+        + Documentation(getPtrNames bool) (<font color=blue>map</font>[string]<font color=blue>interface</font>{}, error)
+        + StartWorker() 
+        + RegisterRPCJob(rpcJob worker.RPCJob) error
+        + Register(c component.Component, options ...component.Option) 
+        + RegisterRemote(c component.Component, options ...component.Option) 
+        + GroupCreate(ctx context.Context, groupName string) error
+        + GroupCreateWithTTL(ctx context.Context, groupName string, ttlTime time.Duration) error
+        + GroupMembers(ctx context.Context, groupName string) ([]string, error)
+        + GroupBroadcast(ctx context.Context, frontendType string, groupName string, route string, v <font color=blue>interface</font>{}) error
+        + GroupContainsMember(ctx context.Context, groupName string, uid string) (bool, error)
+        + GroupAddMember(ctx context.Context, groupName string, uid string) error
+        + GroupRemoveMember(ctx context.Context, groupName string, uid string) error
+        + GroupRemoveAll(ctx context.Context, groupName string) error
+        + GroupCountMembers(ctx context.Context, groupName string) (int, error)
+        + GroupRenewTTL(ctx context.Context, groupName string) error
+        + GroupDelete(ctx context.Context, groupName string) error
+        + SendKickToUsers(uids []string, frontendType string) ([]string, error)
+        + RegisterModule(module interfaces.Module, name string) error
+        + RegisterModuleAfter(module interfaces.Module, name string) error
+        + RegisterModuleBefore(module interfaces.Module, name string) error
+        + GetModule(name string) (interfaces.Module, error)
+        + SendPushToUsers(route string, v <font color=blue>interface</font>{}, uids []string, frontendType string) ([]string, error)
+        + RPC(ctx context.Context, routeStr string, reply proto.Message, arg proto.Message) error
+        + RPCTo(ctx context.Context, serverID string, routeStr string, reply proto.Message, arg proto.Message) error
+        + ReliableRPC(routeStr string, metadata <font color=blue>map</font>[string]<font color=blue>interface</font>{}, reply proto.Message, arg proto.Message) (string, error)
+        + ReliableRPCWithOptions(routeStr string, metadata <font color=blue>map</font>[string]<font color=blue>interface</font>{}, reply proto.Message, arg proto.Message, opts *config.EnqueueOpts) (string, error)
+
+    }
+    class Builder << (S,Aquamarine) >> {
+        - acceptors []acceptor.Acceptor
+        - postBuildHooks []<font color=blue>func</font>(Pitaya) 
+
+        + Config config.PitayaConfig
+        + DieChan <font color=blue>chan</font> bool
+        + PacketDecoder codec.PacketDecoder
+        + PacketEncoder codec.PacketEncoder
+        + MessageEncoder *message.MessagesEncoder
+        + Serializer serialize.Serializer
+        + Router *router.Router
+        + RPCClient cluster.RPCClient
+        + RPCServer cluster.RPCServer
+        + MetricsReporters []metrics.Reporter
+        + Server *cluster.Server
+        + ServerMode ServerMode
+        + ServiceDiscovery cluster.ServiceDiscovery
+        + Groups groups.GroupService
+        + SessionPool session.SessionPool
+        + Worker *worker.Worker
+        + RemoteHooks *pipeline.RemoteHooks
+        + HandlerHooks *pipeline.HandlerHooks
+
+        + AddAcceptor(ac acceptor.Acceptor) 
+        + AddPostBuildHook(hook <font color=blue>func</font>(Pitaya) ) 
+        + Build() Pitaya
+
+    }
+    interface Pitaya  {
+        + GetDieChan() <font color=blue>chan</font> bool
+        + SetDebug(debug bool) 
+        + SetHeartbeatTime(interval time.Duration) 
+        + GetServerID() string
+        + GetMetricsReporters() []metrics.Reporter
+        + GetServer() *cluster.Server
+        + GetServerByID(id string) (*cluster.Server, error)
+        + GetServersByType(t string) (<font color=blue>map</font>[string]*cluster.Server, error)
+        + GetServers() []*cluster.Server
+        + GetSessionFromCtx(ctx context.Context) session.Session
+        + Start() 
+        + SetDictionary(dict <font color=blue>map</font>[string]uint16) error
+        + AddRoute(serverType string, routingFunction router.RoutingFunc) error
+        + Shutdown() 
+        + StartWorker() 
+        + RegisterRPCJob(rpcJob worker.RPCJob) error
+        + Documentation(getPtrNames bool) (<font color=blue>map</font>[string]<font color=blue>interface</font>{}, error)
+        + IsRunning() bool
+        + RPC(ctx context.Context, routeStr string, reply proto.Message, arg proto.Message) error
+        + RPCTo(ctx context.Context, serverID string, routeStr string, reply proto.Message, arg proto.Message) error
+        + ReliableRPC(routeStr string, metadata <font color=blue>map</font>[string]<font color=blue>interface</font>{}, reply proto.Message, arg proto.Message) (string, error)
+        + ReliableRPCWithOptions(routeStr string, metadata <font color=blue>map</font>[string]<font color=blue>interface</font>{}, reply proto.Message, arg proto.Message, opts *config.EnqueueOpts) (string, error)
+        + SendPushToUsers(route string, v <font color=blue>interface</font>{}, uids []string, frontendType string) ([]string, error)
+        + SendKickToUsers(uids []string, frontendType string) ([]string, error)
+        + GroupCreate(ctx context.Context, groupName string) error
+        + GroupCreateWithTTL(ctx context.Context, groupName string, ttlTime time.Duration) error
+        + GroupMembers(ctx context.Context, groupName string) ([]string, error)
+        + GroupBroadcast(ctx context.Context, frontendType string, groupName string, route string, v <font color=blue>interface</font>{}) error
+        + GroupContainsMember(ctx context.Context, groupName string, uid string) (bool, error)
+        + GroupAddMember(ctx context.Context, groupName string, uid string) error
+        + GroupRemoveMember(ctx context.Context, groupName string, uid string) error
+        + GroupRemoveAll(ctx context.Context, groupName string) error
+        + GroupCountMembers(ctx context.Context, groupName string) (int, error)
+        + GroupRenewTTL(ctx context.Context, groupName string) error
+        + GroupDelete(ctx context.Context, groupName string) error
+        + Register(c component.Component, options ...component.Option) 
+        + RegisterRemote(c component.Component, options ...component.Option) 
+        + RegisterModule(module interfaces.Module, name string) error
+        + RegisterModuleAfter(module interfaces.Module, name string) error
+        + RegisterModuleBefore(module interfaces.Module, name string) error
+        + GetModule(name string) (interfaces.Module, error)
+
+    }
+    interface PitayaBuilder  {
+        + AddPostBuildHook(hook <font color=blue>func</font>(Pitaya) ) 
+        + Build() Pitaya
+
+    }
+    class moduleWrapper << (S,Aquamarine) >> {
+        - module interfaces.Module
+        - name string
+
+    }
+    class pitaya.ServerMode << (T, #FF7700) >>  {
+    }
+    class regComp << (S,Aquamarine) >> {
+        - comp component.Component
+        - opts []component.Option
+
+    }
+}
+
+"pitaya.Pitaya" <|-- "implements""pitaya.App"
+"pitaya.PitayaBuilder" <|-- "implements""pitaya.Builder"
+
+"pitaya.Builder""uses" o-- "cluster.RPCClient"
+"pitaya.Builder""uses" o-- "cluster.RPCServer"
+"pitaya.Builder""uses" o-- "cluster.Server"
+"pitaya.Builder""uses" o-- "cluster.ServiceDiscovery"
+"pitaya.Builder""uses" o-- "codec.PacketDecoder"
+"pitaya.Builder""uses" o-- "codec.PacketEncoder"
+"pitaya.Builder""uses" o-- "config.PitayaConfig"
+"pitaya.Builder""uses" o-- "groups.GroupService"
+"pitaya.Builder""uses" o-- "message.MessagesEncoder"
+"pitaya.Builder""uses" o-- "metrics.Reporter"
+"pitaya.Builder""uses" o-- "pipeline.HandlerHooks"
+"pitaya.Builder""uses" o-- "pipeline.RemoteHooks"
+"pitaya.Builder""uses" o-- "pitaya.ServerMode"
+"pitaya.Builder""uses" o-- "router.Router"
+"pitaya.Builder""uses" o-- "serialize.Serializer"
+"pitaya.Builder""uses" o-- "session.SessionPool"
+"pitaya.Builder""uses" o-- "worker.Worker"
+
+"__builtin__.byte" #.. "alias of""pitaya.ServerMode"
+@enduml

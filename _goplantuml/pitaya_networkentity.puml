@@ -1,0 +1,16 @@
+@startuml
+title pitaya_networkentity
+namespace networkentity {
+    interface NetworkEntity  {
+        + Push(route string, v <font color=blue>interface</font>{}) error
+        + ResponseMID(ctx context.Context, mid uint, v <font color=blue>interface</font>{}, isError ...bool) error
+        + Close() error
+        + Kick(ctx context.Context) error
+        + RemoteAddr() net.Addr
+        + SendRequest(ctx context.Context, serverID string, route string, v <font color=blue>interface</font>{}) (*protos.Response, error)
+
+    }
+}
+
+
+@enduml

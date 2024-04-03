@@ -1,0 +1,77 @@
+@startuml
+title pitaya_modules
+namespace modules {
+    class APIDocsGen << (S,Aquamarine) >> {
+        - basePath string
+        - services []*component.Service
+
+        + Init() error
+
+    }
+    class Base << (S,Aquamarine) >> {
+        + Init() error
+        + AfterInit() 
+        + BeforeShutdown() 
+        + Shutdown() error
+
+    }
+    class Binary << (S,Aquamarine) >> {
+        - binPath string
+        - args []string
+        - gracefulShutdownInterval time.Duration
+        - cmd *exec.Cmd
+        - exitCh <font color=blue>chan</font> <font color=blue>struct</font>{}
+        - binPath string
+        - args []string
+        - gracefulShutdownInterval time.Duration
+        - cmd *exec.Cmd
+        - exitCh <font color=blue>chan</font> <font color=blue>struct</font>{}
+
+        + GetExitChannel() <font color=blue>chan</font> <font color=blue>struct</font>{}
+        + Init() error
+        + Shutdown() error
+        + GetExitChannel() <font color=blue>chan</font> <font color=blue>struct</font>{}
+        + Init() error
+        + Shutdown() error
+
+    }
+    class ETCDBindingStorage << (S,Aquamarine) >> {
+        - cli *v3.Client
+        - etcdEndpoints []string
+        - etcdPrefix string
+        - etcdDialTimeout time.Duration
+        - leaseTTL time.Duration
+        - leaseID v3.LeaseID
+        - thisServer *cluster.Server
+        - sessionPool session.SessionPool
+        - stopChan <font color=blue>chan</font> <font color=blue>struct</font>{}
+
+        - removeBinding(uid string) error
+        - setupOnSessionCloseCB() 
+        - setupOnAfterSessionBindCB() 
+        - watchLeaseChan(c <font color=blue>chan</font> *v3.LeaseKeepAliveResponse) 
+        - bootstrapLease() error
+
+        + PutBinding(uid string) error
+        + GetUserFrontendID(uid string, frontendType string) (string, error)
+        + Init() error
+        + Shutdown() error
+
+    }
+    class UniqueSession << (S,Aquamarine) >> {
+        - server *cluster.Server
+        - rpcClient cluster.RPCClient
+        - sessionPool session.SessionPool
+
+        + OnUserBind(uid string, fid string) 
+        + Init() error
+
+    }
+}
+"modules.Base" *-- "modules.APIDocsGen"
+"modules.Base" *-- "modules.Binary"
+"modules.Base" *-- "modules.ETCDBindingStorage"
+"modules.Base" *-- "modules.UniqueSession"
+
+
+@enduml

@@ -1,0 +1,79 @@
+@startuml
+title pitaya_component
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: false
+end legend
+namespace component {
+    class Base << (S,Aquamarine) >> {
+        + Init() 
+        + AfterInit() 
+        + BeforeShutdown() 
+        + Shutdown() 
+
+    }
+    interface Component  {
+        + Init() 
+        + AfterInit() 
+        + BeforeShutdown() 
+        + Shutdown() 
+
+    }
+    class Handler << (S,Aquamarine) >> {
+        + Receiver reflect.Value
+        + Method reflect.Method
+        + Type reflect.Type
+        + IsRawArg bool
+        + MessageType message.Type
+
+        + ValidateMessageType(msgType message.Type) (bool, error)
+
+    }
+    class Remote << (S,Aquamarine) >> {
+        + Receiver reflect.Value
+        + Method reflect.Method
+        + HasArgs bool
+        + Type reflect.Type
+
+    }
+    class Service << (S,Aquamarine) >> {
+        + Name string
+        + Type reflect.Type
+        + Receiver reflect.Value
+        + Handlers <font color=blue>map</font>[string]*Handler
+        + Remotes <font color=blue>map</font>[string]*Remote
+        + Options options
+
+        + ExtractHandler() error
+        + ExtractRemote() error
+
+    }
+    class component.Option << (T, #FF7700) >>  {
+    }
+    class options << (S,Aquamarine) >> {
+        - name string
+        - nameFunc <font color=blue>func</font>(string) string
+
+    }
+}
+
+"component.Component" <|-- "implements""component.Base"
+
+"component.Handler""uses" o-- "message.Type"
+"component.Handler""uses" o-- "reflect.Method"
+"component.Handler""uses" o-- "reflect.Type"
+"component.Handler""uses" o-- "reflect.Value"
+"component.Remote""uses" o-- "reflect.Method"
+"component.Remote""uses" o-- "reflect.Type"
+"component.Remote""uses" o-- "reflect.Value"
+"component.Service""uses" o-- "component.Handler"
+"component.Service""uses" o-- "component.Remote"
+"component.Service""uses" o-- "component.options"
+"component.Service""uses" o-- "reflect.Type"
+"component.Service""uses" o-- "reflect.Value"
+
+"component.<font color=blue>func</font>(*options) " #.. "alias of""component.Option"
+@enduml

@@ -1,0 +1,24 @@
+@startuml
+title pitaya_docgenerator
+namespace docgenerator {
+    class doc << (S,Aquamarine) >> {
+        + Input <font color=blue>interface</font>{}
+        + Output []<font color=blue>interface</font>{}
+
+    }
+    class docMap << (S,Aquamarine) >> {
+        - toMap() (<font color=blue>map</font>[string]<font color=blue>interface</font>{}, error)
+
+    }
+    class docgenerator.docMap << (T, #FF7700) >>  {
+    }
+    class docs << (S,Aquamarine) >> {
+        + Handlers docMap
+        + Remotes docMap
+
+    }
+}
+
+
+"docgenerator.<font color=blue>map</font>[string]*doc" #.. "docgenerator.docMap"
+@enduml

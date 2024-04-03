@@ -1,0 +1,421 @@
+@startuml
+title pitaya_cluster
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: false
+end legend
+namespace cluster {
+    class GRPCClient << (S,Aquamarine) >> {
+        - bindingStorage interfaces.BindingStorage
+        - clientMap sync.Map
+        - dialTimeout time.Duration
+        - infoRetriever InfoRetriever
+        - lazy bool
+        - metricsReporters []metrics.Reporter
+        - reqTimeout time.Duration
+        - server *Server
+
+        - getServerHost(sv *Server) (string, string)
+
+        + Init() error
+        + Call(ctx context.Context, rpcType protos.RPCType, route *route.Route, session session.Session, msg *message.Message, server *Server) (*protos.Response, error)
+        + Send(uid string, d []byte) error
+        + BroadcastSessionBind(uid string) error
+        + SendKick(userID string, serverType string, kick *protos.KickMsg) error
+        + SendPush(userID string, frontendSv *Server, push *protos.Push) error
+        + AddServer(sv *Server) 
+        + RemoveServer(sv *Server) 
+        + AfterInit() 
+        + BeforeShutdown() 
+        + Shutdown() error
+
+    }
+    class GRPCServer << (S,Aquamarine) >> {
+        - server *Server
+        - port int
+        - metricsReporters []metrics.Reporter
+        - grpcSv *grpc.Server
+        - pitayaServer protos.PitayaServer
+
+        + Init() error
+        + SetPitayaServer(ps protos.PitayaServer) 
+        + AfterInit() 
+        + BeforeShutdown() 
+        + Shutdown() error
+
+    }
+    interface InfoRetriever  {
+        + Region() string
+
+    }
+    class NatsRPCClient << (S,Aquamarine) >> {
+        - conn *nats.go.Conn
+        - connString string
+        - connectionTimeout time.Duration
+        - maxReconnectionRetries int
+        - reqTimeout time.Duration
+        - running bool
+        - server *Server
+        - metricsReporters []metrics.Reporter
+        - appDieChan <font color=blue>chan</font> bool
+
+        - configure(config config.NatsRPCClientConfig) error
+        - stop() 
+        - getSubscribeChannel() string
+
+        + BroadcastSessionBind(uid string) error
+        + Send(topic string, data []byte) error
+        + SendPush(userID string, frontendSv *Server, push *protos.Push) error
+        + SendKick(userID string, serverType string, kick *protos.KickMsg) error
+        + Call(ctx context.Context, rpcType protos.RPCType, route *route.Route, session session.Session, msg *message.Message, server *Server) (*protos.Response, error)
+        + Init() error
+        + AfterInit() 
+        + BeforeShutdown() 
+        + Shutdown() error
+
+    }
+    class NatsRPCServer << (S,Aquamarine) >> {
+        - service int
+        - connString string
+        - connectionTimeout time.Duration
+        - maxReconnectionRetries int
+        - server *Server
+        - conn *nats.go.Conn
+        - pushBufferSize int
+        - messagesBufferSize int
+        - stopChan <font color=blue>chan</font> bool
+        - subChan <font color=blue>chan</font> *nats.go.Msg
+        - bindingsChan <font color=blue>chan</font> *nats.go.Msg
+        - unhandledReqCh <font color=blue>chan</font> *protos.Request
+        - responses []*protos.Response
+        - requests []*protos.Request
+        - userPushCh <font color=blue>chan</font> *protos.Push
+        - userKickCh <font color=blue>chan</font> *protos.KickMsg
+        - sub *nats.go.Subscription
+        - dropped int
+        - pitayaServer protos.PitayaServer
+        - metricsReporters []metrics.Reporter
+        - sessionPool session.SessionPool
+        - appDieChan <font color=blue>chan</font> bool
+
+        - configure(config config.NatsRPCServerConfig) error
+        - onSessionBind(ctx context.Context, s session.Session) error
+        - subscribeToBindingsChannel() error
+        - subscribeToUserKickChannel(uid string, svType string) (*nats.go.Subscription, error)
+        - subscribeToUserMessages(uid string, svType string) (*nats.go.Subscription, error)
+        - handleMessages() 
+        - getUserPushChannel() <font color=blue>chan</font> *protos.Push
+        - getUserKickChannel() <font color=blue>chan</font> *protos.KickMsg
+        - marshalResponse(res *protos.Response) ([]byte, error)
+        - processMessages(threadID int) 
+        - processSessionBindings() 
+        - processPushes() 
+        - processKick() 
+        - subscribe(topic string) (*nats.go.Subscription, error)
+        - stop() 
+        - reportMetrics() 
+
+        + GetBindingsChannel() <font color=blue>chan</font> *nats.go.Msg
+        + SetPitayaServer(ps protos.PitayaServer) 
+        + GetUnhandledRequestsChannel() <font color=blue>chan</font> *protos.Request
+        + Init() error
+        + AfterInit() 
+        + BeforeShutdown() 
+        + Shutdown() error
+
+    }
+    interface RPCClient  {
+        + Send(route string, data []byte) error
+        + SendPush(userID string, frontendSv *Server, push *protos.Push) error
+        + SendKick(userID string, serverType string, kick *protos.KickMsg) error
+        + BroadcastSessionBind(uid string) error
+        + Call(ctx context.Context, rpcType protos.RPCType, route *route.Route, session session.Session, msg *message.Message, server *Server) (*protos.Response, error)
+
+    }
+    interface RPCServer  {
+        + SetPitayaServer( protos.PitayaServer) 
+
+    }
+    interface RemoteBindingListener  {
+        + OnUserBind(uid string, fid string) 
+
+    }
+    interface SDListener  {
+        + AddServer( *Server) 
+        + RemoveServer( *Server) 
+
+    }
+    class Server << (S,Aquamarine) >> {
+        + ID string
+        + Type string
+        + Metadata <font color=blue>map</font>[string]string
+        + Frontend bool
+        + Hostname string
+
+        + AsJSONString() string
+
+    }
+    interface ServiceDiscovery  {
+        + GetServersByType(serverType string) (<font color=blue>map</font>[string]*Server, error)
+        + GetServer(id string) (*Server, error)
+        + GetServers() []*Server
+        + SyncServers(firstSync bool) error
+        + AddListener(listener SDListener) 
+
+    }
+    class cluster.Action << (T, #FF7700) >>  {
+    }
+    class etcdServiceDiscovery << (S,Aquamarine) >> {
+        - cli *v3.Client
+        - syncServersInterval time.Duration
+        - heartbeatTTL time.Duration
+        - logHeartbeat bool
+        - lastHeartbeatTime time.Time
+        - leaseID v3.LeaseID
+        - mapByTypeLock sync.RWMutex
+        - serverMapByType <font color=blue>map</font>[string]<font color=blue>map</font>[string]*Server
+        - serverMapByID sync.Map
+        - etcdEndpoints []string
+        - etcdUser string
+        - etcdPass string
+        - etcdPrefix string
+        - etcdDialTimeout time.Duration
+        - running bool
+        - server *Server
+        - stopChan <font color=blue>chan</font> bool
+        - stopLeaseChan <font color=blue>chan</font> bool
+        - lastSyncTime time.Time
+        - listeners []SDListener
+        - revokeTimeout time.Duration
+        - grantLeaseTimeout time.Duration
+        - grantLeaseMaxRetries int
+        - grantLeaseInterval time.Duration
+        - shutdownDelay time.Duration
+        - appDieChan <font color=blue>chan</font> bool
+        - serverTypesBlacklist []string
+        - syncServersParallelism int
+        - syncServersRunning <font color=blue>chan</font> bool
+
+        - configure(config config.EtcdServiceDiscoveryConfig) 
+        - watchLeaseChan(c <font color=blue>chan</font> *v3.LeaseKeepAliveResponse) 
+        - renewLease() error
+        - grantLease() error
+        - addServerIntoEtcd(server *Server) error
+        - bootstrapServer(server *Server) error
+        - notifyListeners(act Action, sv *Server) 
+        - writeLockScope(f <font color=blue>func</font>() ) 
+        - deleteServer(serverID string) 
+        - deleteLocalInvalidServers(actualServers []string) 
+        - bootstrap() error
+        - printServers() 
+        - revoke() error
+        - addServer(sv *Server) 
+        - watchEtcdChanges() 
+        - isServerTypeBlacklisted(svType string) bool
+
+        + AddListener(listener SDListener) 
+        + AfterInit() 
+        + GetServersByType(serverType string) (<font color=blue>map</font>[string]*Server, error)
+        + GetServers() []*Server
+        + GetServer(id string) (*Server, error)
+        + InitETCDClient() error
+        + Init() error
+        + SyncServers(firstSync bool) error
+        + BeforeShutdown() 
+        + Shutdown() error
+
+    }
+    class grpcClient << (S,Aquamarine) >> {
+        - address string
+        - cli protos.PitayaClient
+        - conn *grpc.ClientConn
+        - connected bool
+        - lock sync.Mutex
+
+        - connect() error
+        - disconnect() 
+        - pushToUser(ctx context.Context, push *protos.Push) error
+        - call(ctx context.Context, req *protos.Request) (*protos.Response, error)
+        - sessionBindRemote(ctx context.Context, req *protos.BindMsg) error
+        - sendKick(ctx context.Context, req *protos.KickMsg) error
+
+    }
+    class infoRetriever << (S,Aquamarine) >> {
+        - region string
+
+        + Region() string
+
+    }
+    class parallelGetter << (S,Aquamarine) >> {
+        - cli *v3.Client
+        - numWorkers int
+        - wg *sync.WaitGroup
+        - resultMutex sync.Mutex
+        - result *[]*Server
+        - workChan <font color=blue>chan</font> parallelGetterWork
+
+        - start() 
+        - waitAndGetResult() []*Server
+        - addWorkWithPayload(serverType string, serverID string, payload []byte) 
+        - addWork(serverType string, serverID string) 
+
+    }
+    class parallelGetterWork << (S,Aquamarine) >> {
+        - serverType string
+        - serverID string
+        - payload []byte
+
+    }
+}
+
+"cluster.RPCClient" <|-- "implements""cluster.GRPCClient"
+"cluster.SDListener" <|-- "implements""cluster.GRPCClient"
+"cluster.RPCServer" <|-- "implements""cluster.GRPCServer"
+"cluster.RPCClient" <|-- "implements""cluster.NatsRPCClient"
+"cluster.RPCServer" <|-- "implements""cluster.NatsRPCServer"
+"cluster.ServiceDiscovery" <|-- "implements""cluster.etcdServiceDiscovery"
+"cluster.InfoRetriever" <|-- "implements""cluster.infoRetriever"
+
+
+namespace mocks {
+    class MockInfoRetriever << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockInfoRetrieverMockRecorder
+
+        + EXPECT() *MockInfoRetrieverMockRecorder
+        + Region() string
+
+    }
+    class MockInfoRetrieverMockRecorder << (S,Aquamarine) >> {
+        - mock *MockInfoRetriever
+
+        + Region() *gomock.Call
+
+    }
+    class MockRPCClient << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockRPCClientMockRecorder
+
+        + EXPECT() *MockRPCClientMockRecorder
+        + AfterInit() 
+        + BeforeShutdown() 
+        + BroadcastSessionBind(uid string) error
+        + Call(ctx context.Context, rpcType protos.RPCType, route *route.Route, session session.Session, msg *message.Message, server *cluster.Server) (*protos.Response, error)
+        + Init() error
+        + Send(route string, data []byte) error
+        + SendKick(userID string, serverType string, kick *protos.KickMsg) error
+        + SendPush(userID string, frontendSv *cluster.Server, push *protos.Push) error
+        + Shutdown() error
+
+    }
+    class MockRPCClientMockRecorder << (S,Aquamarine) >> {
+        - mock *MockRPCClient
+
+        + AfterInit() *gomock.Call
+        + BeforeShutdown() *gomock.Call
+        + BroadcastSessionBind(uid <font color=blue>interface</font>{}) *gomock.Call
+        + Call(ctx <font color=blue>interface</font>{}, rpcType <font color=blue>interface</font>{}, route <font color=blue>interface</font>{}, session <font color=blue>interface</font>{}, msg <font color=blue>interface</font>{}, server <font color=blue>interface</font>{}) *gomock.Call
+        + Init() *gomock.Call
+        + Send(route <font color=blue>interface</font>{}, data <font color=blue>interface</font>{}) *gomock.Call
+        + SendKick(userID <font color=blue>interface</font>{}, serverType <font color=blue>interface</font>{}, kick <font color=blue>interface</font>{}) *gomock.Call
+        + SendPush(userID <font color=blue>interface</font>{}, frontendSv <font color=blue>interface</font>{}, push <font color=blue>interface</font>{}) *gomock.Call
+        + Shutdown() *gomock.Call
+
+    }
+    class MockRPCServer << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockRPCServerMockRecorder
+
+        + EXPECT() *MockRPCServerMockRecorder
+        + AfterInit() 
+        + BeforeShutdown() 
+        + Init() error
+        + SetPitayaServer(arg0 protos.PitayaServer) 
+        + Shutdown() error
+
+    }
+    class MockRPCServerMockRecorder << (S,Aquamarine) >> {
+        - mock *MockRPCServer
+
+        + AfterInit() *gomock.Call
+        + BeforeShutdown() *gomock.Call
+        + Init() *gomock.Call
+        + SetPitayaServer(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + Shutdown() *gomock.Call
+
+    }
+    class MockRemoteBindingListener << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockRemoteBindingListenerMockRecorder
+
+        + EXPECT() *MockRemoteBindingListenerMockRecorder
+        + OnUserBind(uid string, fid string) 
+
+    }
+    class MockRemoteBindingListenerMockRecorder << (S,Aquamarine) >> {
+        - mock *MockRemoteBindingListener
+
+        + OnUserBind(uid <font color=blue>interface</font>{}, fid <font color=blue>interface</font>{}) *gomock.Call
+
+    }
+    class MockSDListener << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockSDListenerMockRecorder
+
+        + EXPECT() *MockSDListenerMockRecorder
+        + AddServer(arg0 *cluster.Server) 
+        + RemoveServer(arg0 *cluster.Server) 
+
+    }
+    class MockSDListenerMockRecorder << (S,Aquamarine) >> {
+        - mock *MockSDListener
+
+        + AddServer(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + RemoveServer(arg0 <font color=blue>interface</font>{}) *gomock.Call
+
+    }
+    class MockServiceDiscovery << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockServiceDiscoveryMockRecorder
+
+        + EXPECT() *MockServiceDiscoveryMockRecorder
+        + AddListener(listener cluster.SDListener) 
+        + AfterInit() 
+        + BeforeShutdown() 
+        + GetServer(id string) (*cluster.Server, error)
+        + GetServers() []*cluster.Server
+        + GetServersByType(serverType string) (<font color=blue>map</font>[string]*cluster.Server, error)
+        + Init() error
+        + Shutdown() error
+        + SyncServers(firstSync bool) error
+
+    }
+    class MockServiceDiscoveryMockRecorder << (S,Aquamarine) >> {
+        - mock *MockServiceDiscovery
+
+        + AddListener(listener <font color=blue>interface</font>{}) *gomock.Call
+        + AfterInit() *gomock.Call
+        + BeforeShutdown() *gomock.Call
+        + GetServer(id <font color=blue>interface</font>{}) *gomock.Call
+        + GetServers() *gomock.Call
+        + GetServersByType(serverType <font color=blue>interface</font>{}) *gomock.Call
+        + Init() *gomock.Call
+        + Shutdown() *gomock.Call
+        + SyncServers(firstSync <font color=blue>interface</font>{}) *gomock.Call
+
+    }
+}
+
+"cluster.InfoRetriever" <|-- "implements""mocks.MockInfoRetriever"
+"cluster.RPCClient" <|-- "implements""mocks.MockRPCClient"
+"cluster.RPCServer" <|-- "implements""mocks.MockRPCServer"
+"cluster.RemoteBindingListener" <|-- "implements""mocks.MockRemoteBindingListener"
+"cluster.SDListener" <|-- "implements""mocks.MockSDListener"
+"cluster.ServiceDiscovery" <|-- "implements""mocks.MockServiceDiscovery"
+
+
+"__builtin__.int" #.. "alias of""cluster.Action"
+@enduml

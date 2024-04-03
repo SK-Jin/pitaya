@@ -1,0 +1,24 @@
+@startuml
+title pitaya_serialize
+namespace serialize {
+    interface Marshaler  {
+        + Marshal( <font color=blue>interface</font>{}) ([]byte, error)
+
+    }
+    interface Serializer  {
+        + GetName() string
+
+    }
+    interface Unmarshaler  {
+        + Unmarshal( []byte,  <font color=blue>interface</font>{}) error
+
+    }
+    class serialize.Type << (T, #FF7700) >>  {
+    }
+}
+"serialize.Marshaler" *-- "serialize.Serializer"
+"serialize.Unmarshaler" *-- "serialize.Serializer"
+
+
+"__builtin__.uint16" #.. "serialize.Type"
+@enduml

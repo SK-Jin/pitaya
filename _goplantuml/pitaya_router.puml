@@ -1,0 +1,24 @@
+@startuml
+title pitaya_router
+namespace router {
+    class Router << (S,Aquamarine) >> {
+        - serviceDiscovery cluster.ServiceDiscovery
+        - routesMap <font color=blue>map</font>[string]RoutingFunc
+
+        - defaultRoute(servers <font color=blue>map</font>[string]*cluster.Server) *cluster.Server
+
+        + SetServiceDiscovery(sd cluster.ServiceDiscovery) 
+        + Route(ctx context.Context, rpcType protos.RPCType, svType string, route *route.Route, msg *message.Message) (*cluster.Server, error)
+        + AddRoute(serverType string, routingFunction RoutingFunc) 
+
+    }
+    class router.RoutingFunc << (T, #FF7700) >>  {
+    }
+    class "<font color=blue>func</font>(context.Context, *route.Route, []byte, <font color=blue>map</font>[string]*cluster.Server) (*cluster.Server, error)" as fontcolorbluefuncfontcontextContextrouteRoutebytefontcolorbluemapfontstringclusterServerclusterServererror {
+        'This class was created so that we can correctly have an alias pointing to this name. Since it contains dots that can break namespaces
+    }
+}
+
+
+"router.fontcolorbluefuncfontcontextContextrouteRoutebytefontcolorbluemapfontstringclusterServerclusterServererror" #.. "router.RoutingFunc"
+@enduml

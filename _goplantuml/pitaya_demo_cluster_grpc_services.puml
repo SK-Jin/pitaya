@@ -1,0 +1,81 @@
+@startuml
+title pitaya_demo_cluster_grpc_services
+namespace services {
+    class AllMembers << (S,Aquamarine) >> {
+        + Members []string
+
+    }
+    class Connector << (S,Aquamarine) >> {
+        - app pitaya.Pitaya
+
+        + GetSessionData(ctx context.Context) (*SessionData, error)
+        + SetSessionData(ctx context.Context, data *SessionData) (*Response, error)
+        + NotifySessionData(ctx context.Context, data *SessionData) 
+        + SendPushToUser(ctx context.Context, msg *UserMessage) (*Response, error)
+
+    }
+    class ConnectorRemote << (S,Aquamarine) >> {
+        + RemoteFunc(ctx context.Context, msg *protos.RPCMsg) (*protos.RPCRes, error)
+
+    }
+    class JoinResponse << (S,Aquamarine) >> {
+        + Code int
+        + Result string
+
+    }
+    class NewUser << (S,Aquamarine) >> {
+        + Content string
+
+    }
+    class Response << (S,Aquamarine) >> {
+        + Code int32
+        + Msg string
+
+    }
+    class Room << (S,Aquamarine) >> {
+        - timer *timer.Timer
+        - app pitaya.Pitaya
+
+        + Stats *Stats
+
+        + Init() 
+        + AfterInit() 
+        + Entry(ctx context.Context, msg []byte) (*JoinResponse, error)
+        + GetSessionData(ctx context.Context) (*SessionData, error)
+        + SetSessionData(ctx context.Context, data *SessionData) ([]byte, error)
+        + Join(ctx context.Context) (*JoinResponse, error)
+        + Message(ctx context.Context, msg *UserMessage) 
+        + SendRPC(ctx context.Context, msg *protos.RPCMsg) (*protos.RPCRes, error)
+        + MessageRemote(ctx context.Context, msg *UserMessage, b bool, s string) (*UserMessage, error)
+
+    }
+    class SendRPCMsg << (S,Aquamarine) >> {
+        + ServerID string
+        + Route string
+        + Msg string
+
+    }
+    class SessionData << (S,Aquamarine) >> {
+        + Data <font color=blue>map</font>[string]<font color=blue>interface</font>{}
+
+    }
+    class Stats << (S,Aquamarine) >> {
+        - outboundBytes int
+        - inboundBytes int
+
+        + Outbound(ctx context.Context, in []byte) ([]byte, error)
+        + Inbound(ctx context.Context, in []byte) ([]byte, error)
+
+    }
+    class UserMessage << (S,Aquamarine) >> {
+        + Name string
+        + Content string
+
+    }
+}
+"component.Base" *-- "services.Connector"
+"component.Base" *-- "services.ConnectorRemote"
+"component.Base" *-- "services.Room"
+
+
+@enduml

@@ -1,0 +1,349 @@
+@startuml
+title pitaya_protos
+namespace protos {
+    class BindMsg << (S,Aquamarine) >> {
+        + Uid string
+        + Fid string
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetUid() string
+        + GetFid() string
+
+    }
+    class Doc << (S,Aquamarine) >> {
+        + Doc string
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetDoc() string
+
+    }
+    class DocMsg << (S,Aquamarine) >> {
+        + GetProtos bool
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetGetProtos() bool
+
+    }
+    class Error << (S,Aquamarine) >> {
+        + Code string
+        + Msg string
+        + Metadata <font color=blue>map</font>[string]string
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetCode() string
+        + GetMsg() string
+        + GetMetadata() <font color=blue>map</font>[string]string
+
+    }
+    class KickAnswer << (S,Aquamarine) >> {
+        + Kicked bool
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetKicked() bool
+
+    }
+    class KickMsg << (S,Aquamarine) >> {
+        + UserId string
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetUserId() string
+
+    }
+    class Msg << (S,Aquamarine) >> {
+        + Id uint64
+        + Route string
+        + Data []byte
+        + Reply string
+        + Type MsgType
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetId() uint64
+        + GetRoute() string
+        + GetData() []byte
+        + GetReply() string
+        + GetType() MsgType
+
+    }
+    class MsgType << (S,Aquamarine) >> {
+        + String() string
+        + EnumDescriptor() ([]byte, []int)
+
+    }
+    interface PitayaClient  {
+        + Call(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+        + PushToUser(ctx context.Context, in *Push, opts ...grpc.CallOption) (*Response, error)
+        + SessionBindRemote(ctx context.Context, in *BindMsg, opts ...grpc.CallOption) (*Response, error)
+        + KickUser(ctx context.Context, in *KickMsg, opts ...grpc.CallOption) (*KickAnswer, error)
+
+    }
+    interface PitayaServer  {
+        + Call( context.Context,  *Request) (*Response, error)
+        + PushToUser( context.Context,  *Push) (*Response, error)
+        + SessionBindRemote( context.Context,  *BindMsg) (*Response, error)
+        + KickUser( context.Context,  *KickMsg) (*KickAnswer, error)
+
+    }
+    class ProtoDescriptor << (S,Aquamarine) >> {
+        + Desc []byte
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetDesc() []byte
+
+    }
+    class ProtoDescriptors << (S,Aquamarine) >> {
+        + Desc [][]byte
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetDesc() [][]byte
+
+    }
+    class ProtoName << (S,Aquamarine) >> {
+        + Name string
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetName() string
+
+    }
+    class ProtoNames << (S,Aquamarine) >> {
+        + Name []string
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetName() []string
+
+    }
+    class Push << (S,Aquamarine) >> {
+        + Route string
+        + Uid string
+        + Data []byte
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetRoute() string
+        + GetUid() string
+        + GetData() []byte
+
+    }
+    class RPCType << (S,Aquamarine) >> {
+        + String() string
+        + EnumDescriptor() ([]byte, []int)
+
+    }
+    class Request << (S,Aquamarine) >> {
+        + Type RPCType
+        + Session *Session
+        + Msg *Msg
+        + FrontendID string
+        + Metadata []byte
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetType() RPCType
+        + GetSession() *Session
+        + GetMsg() *Msg
+        + GetFrontendID() string
+        + GetMetadata() []byte
+
+    }
+    class Response << (S,Aquamarine) >> {
+        + Data []byte
+        + Error *Error
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetData() []byte
+        + GetError() *Error
+
+    }
+    class Session << (S,Aquamarine) >> {
+        + Id int64
+        + Uid string
+        + Data []byte
+        + XXX_NoUnkeyedLiteral <font color=blue>struct</font>{}
+        + XXX_unrecognized []byte
+        + XXX_sizecache int32
+
+        + Reset() 
+        + String() string
+        + ProtoMessage() 
+        + Descriptor() ([]byte, []int)
+        + XXX_Unmarshal(b []byte) error
+        + XXX_Marshal(b []byte, deterministic bool) ([]byte, error)
+        + XXX_Merge(src proto.Message) 
+        + XXX_Size() int
+        + XXX_DiscardUnknown() 
+        + GetId() int64
+        + GetUid() string
+        + GetData() []byte
+
+    }
+    class pitayaClient << (S,Aquamarine) >> {
+        - cc *grpc.ClientConn
+
+        + Call(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Response, error)
+        + PushToUser(ctx context.Context, in *Push, opts ...grpc.CallOption) (*Response, error)
+        + SessionBindRemote(ctx context.Context, in *BindMsg, opts ...grpc.CallOption) (*Response, error)
+        + KickUser(ctx context.Context, in *KickMsg, opts ...grpc.CallOption) (*KickAnswer, error)
+
+    }
+    class protos.MsgType << (T, #FF7700) >>  {
+    }
+    class protos.RPCType << (T, #FF7700) >>  {
+    }
+}
+
+"protos.PitayaClient" <|-- "protos.pitayaClient"
+
+"__builtin__.int32" #.. "protos.MsgType"
+"__builtin__.int32" #.. "protos.RPCType"
+@enduml

@@ -1,0 +1,56 @@
+@startuml
+title pitaya_groups
+namespace groups {
+    class EtcdGroupService << (S,Aquamarine) >> {
+        - createGroup(ctx context.Context, groupName string, leaseID v3.LeaseID) error
+
+        + GroupCreate(ctx context.Context, groupName string) error
+        + GroupCreateWithTTL(ctx context.Context, groupName string, ttlTime time.Duration) error
+        + GroupMembers(ctx context.Context, groupName string) ([]string, error)
+        + GroupContainsMember(ctx context.Context, groupName string, uid string) (bool, error)
+        + GroupAddMember(ctx context.Context, groupName string, uid string) error
+        + GroupRemoveMember(ctx context.Context, groupName string, uid string) error
+        + GroupRemoveAll(ctx context.Context, groupName string) error
+        + GroupDelete(ctx context.Context, groupName string) error
+        + GroupCountMembers(ctx context.Context, groupName string) (int, error)
+        + GroupRenewTTL(ctx context.Context, groupName string) error
+
+    }
+    interface GroupService  {
+        + GroupAddMember(ctx context.Context, groupName string, uid string) error
+        + GroupContainsMember(ctx context.Context, groupName string, uid string) (bool, error)
+        + GroupCountMembers(ctx context.Context, groupName string) (int, error)
+        + GroupCreate(ctx context.Context, groupName string) error
+        + GroupCreateWithTTL(ctx context.Context, groupName string, ttlTime time.Duration) error
+        + GroupDelete(ctx context.Context, groupName string) error
+        + GroupMembers(ctx context.Context, groupName string) ([]string, error)
+        + GroupRemoveAll(ctx context.Context, groupName string) error
+        + GroupRemoveMember(ctx context.Context, groupName string, uid string) error
+        + GroupRenewTTL(ctx context.Context, groupName string) error
+
+    }
+    class MemoryGroup << (S,Aquamarine) >> {
+        + Uids []string
+        + LastRefresh int64
+        + TTL int64
+
+    }
+    class MemoryGroupService << (S,Aquamarine) >> {
+        + GroupCreate(ctx context.Context, groupName string) error
+        + GroupCreateWithTTL(ctx context.Context, groupName string, ttlTime time.Duration) error
+        + GroupMembers(ctx context.Context, groupName string) ([]string, error)
+        + GroupContainsMember(ctx context.Context, groupName string, uid string) (bool, error)
+        + GroupAddMember(ctx context.Context, groupName string, uid string) error
+        + GroupRemoveMember(ctx context.Context, groupName string, uid string) error
+        + GroupRemoveAll(ctx context.Context, groupName string) error
+        + GroupDelete(ctx context.Context, groupName string) error
+        + GroupCountMembers(ctx context.Context, groupName string) (int, error)
+        + GroupRenewTTL(ctx context.Context, groupName string) error
+
+    }
+}
+
+"groups.GroupService" <|-- "groups.EtcdGroupService"
+"groups.GroupService" <|-- "groups.MemoryGroupService"
+
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+title pitaya_defaultpipelines
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: false
+end legend
+namespace defaultpipelines {
+    class DefaultValidator << (S,Aquamarine) >> {
+        - once sync.Once
+        - validate *v10.Validate
+
+        - lazyinit() 
+
+        + Validate(ctx context.Context, in <font color=blue>interface</font>{}) (context.Context, <font color=blue>interface</font>{}, error)
+
+    }
+    interface StructValidator  {
+        + Validate( context.Context,  <font color=blue>interface</font>{}) (context.Context, <font color=blue>interface</font>{}, error)
+
+    }
+}
+
+"defaultpipelines.StructValidator" <|-- "implements""defaultpipelines.DefaultValidator"
+
+
+@enduml

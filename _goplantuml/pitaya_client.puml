@@ -1,0 +1,123 @@
+@startuml
+title pitaya_client
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: false
+end legend
+namespace client {
+    class Client << (S,Aquamarine) >> {
+        - conn net.Conn
+        - packetEncoder codec.PacketEncoder
+        - packetDecoder codec.PacketDecoder
+        - packetChan <font color=blue>chan</font> *packet.Packet
+        - pendingChan <font color=blue>chan</font> bool
+        - pendingRequests <font color=blue>map</font>[uint]*pendingRequest
+        - pendingReqMutex sync.Mutex
+        - requestTimeout time.Duration
+        - closeChan <font color=blue>chan</font> <font color=blue>struct</font>{}
+        - nextID uint32
+        - messageEncoder message.Encoder
+        - clientHandshakeData *session.HandshakeData
+
+        + Connected bool
+        + IncomingMsgChan <font color=blue>chan</font> *message.Message
+
+        - sendHandshakeRequest() error
+        - handleHandshakeResponse() error
+        - pendingRequestsReaper() 
+        - handlePackets() 
+        - readPackets(buf *bytes.Buffer) ([]*packet.Packet, error)
+        - handleServerMessages() 
+        - sendHeartbeats(interval int) 
+        - handleHandshake() error
+        - buildPacket(msg message.Message) ([]byte, error)
+        - sendMsg(msgType message.Type, route string, data []byte) (uint, error)
+
+        + MsgChannel() <font color=blue>chan</font> *message.Message
+        + ConnectedStatus() bool
+        + SetClientHandshakeData(data *session.HandshakeData) 
+        + Disconnect() 
+        + ConnectTo(addr string, tlsConfig ...*tls.Config) error
+        + ConnectToWS(addr string, path string, tlsConfig ...*tls.Config) error
+        + SendRequest(route string, data []byte) (uint, error)
+        + SendNotify(route string, data []byte) error
+
+    }
+    class Command << (S,Aquamarine) >> {
+        - input string
+        - output string
+        - inputMsgDescriptor *desc.MessageDescriptor
+        - outputMsgDescriptor *desc.MessageDescriptor
+
+    }
+    class HandshakeData << (S,Aquamarine) >> {
+        + Code int
+        + Sys HandshakeSys
+
+    }
+    class HandshakeSys << (S,Aquamarine) >> {
+        + Dict <font color=blue>map</font>[string]uint16
+        + Heartbeat int
+        + Serializer string
+
+    }
+    interface PitayaClient  {
+        + ConnectTo(addr string, tlsConfig ...*tls.Config) error
+        + ConnectToWS(addr string, path string, tlsConfig ...*tls.Config) error
+        + ConnectedStatus() bool
+        + Disconnect() 
+        + MsgChannel() <font color=blue>chan</font> *message.Message
+        + SendNotify(route string, data []byte) error
+        + SendRequest(route string, data []byte) (uint, error)
+        + SetClientHandshakeData(data *session.HandshakeData) 
+
+    }
+    class ProtoBufferInfo << (S,Aquamarine) >> {
+        + Commands <font color=blue>map</font>[string]*Command
+
+    }
+    class ProtoClient << (S,Aquamarine) >> {
+        - descriptorsNames <font color=blue>map</font>[string]bool
+        - info ProtoBufferInfo
+        - docsRoute string
+        - descriptorsRoute string
+        - expectedInputDescriptor *desc.MessageDescriptor
+        - ready bool
+        - closeChan <font color=blue>chan</font> bool
+
+        + IncomingMsgChan <font color=blue>chan</font> *message.Message
+
+        - buildProtosFromDescriptor(descriptorArray []*descriptor.FileDescriptorProto) error
+        - getDescriptors(data string) error
+        - waitForData() 
+
+        + MsgChannel() <font color=blue>chan</font> *message.Message
+        + LoadServerInfo(addr string) error
+        + Disconnect() 
+        + ConnectTo(addr string, tlsConfig ...*tls.Config) error
+        + ExportInformation() *ProtoBufferInfo
+        + LoadInfo(info *ProtoBufferInfo) error
+        + AddPushResponse(route string, protoName string) 
+        + SendRequest(route string, data []byte) (uint, error)
+        + SendNotify(route string, data []byte) error
+
+    }
+    class pendingRequest << (S,Aquamarine) >> {
+        - msg *message.Message
+        - sentAt time.Time
+
+    }
+}
+"client.Client" *-- "extends""client.ProtoClient"
+
+"client.PitayaClient" <|-- "implements""client.Client"
+
+"client.Client""uses" o-- "message.Message"
+"client.HandshakeData""uses" o-- "client.HandshakeSys"
+"client.ProtoBufferInfo""uses" o-- "client.Command"
+"client.ProtoClient""uses" o-- "message.Message"
+
+@enduml

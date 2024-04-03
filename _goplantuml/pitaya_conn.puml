@@ -1,0 +1,143 @@
+@startuml
+title pitaya_conn
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: false
+end legend
+namespace codec {
+    interface PacketDecoder  {
+        + Decode(data []byte) ([]*packet.Packet, error)
+
+    }
+    interface PacketEncoder  {
+        + Encode(typ packet.Type, data []byte) ([]byte, error)
+
+    }
+    class PomeloPacketDecoder << (S,Aquamarine) >> {
+        - forward(buf *bytes.Buffer) (int, packet.Type, error)
+
+        + Decode(data []byte) ([]*packet.Packet, error)
+
+    }
+    class PomeloPacketEncoder << (S,Aquamarine) >> {
+        + Encode(typ packet.Type, data []byte) ([]byte, error)
+
+    }
+}
+
+"codec.PacketDecoder" <|-- "implements""codec.PomeloPacketDecoder"
+"codec.PacketEncoder" <|-- "implements""codec.PomeloPacketEncoder"
+
+
+namespace message {
+    interface Encoder  {
+        + IsCompressionEnabled() bool
+        + Encode(message *Message) ([]byte, error)
+
+    }
+    class Message << (S,Aquamarine) >> {
+        - compressed bool
+
+        + Type Type
+        + ID uint
+        + Route string
+        + Data []byte
+        + Err bool
+
+        + String() string
+
+    }
+    class MessagesEncoder << (S,Aquamarine) >> {
+        + DataCompression bool
+
+        + IsCompressionEnabled() bool
+        + Encode(message *Message) ([]byte, error)
+        + Decode(data []byte) (*Message, error)
+
+    }
+    class Type << (S,Aquamarine) >> {
+        + String() string
+
+    }
+    class message.Type << (T, #FF7700) >>  {
+    }
+}
+
+"message.Encoder" <|-- "implements""message.MessagesEncoder"
+
+"message.Message""uses" o-- "message.Type"
+
+namespace mocks {
+    class MockEncoder << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockEncoderMockRecorder
+
+        + EXPECT() *MockEncoderMockRecorder
+        + IsCompressionEnabled() bool
+        + Encode(message *message.Message) ([]byte, error)
+
+    }
+    class MockEncoderMockRecorder << (S,Aquamarine) >> {
+        - mock *MockEncoder
+
+        + IsCompressionEnabled() *gomock.Call
+        + Encode(message <font color=blue>interface</font>{}) *gomock.Call
+
+    }
+    class MockPacketDecoder << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockPacketDecoderMockRecorder
+
+        + EXPECT() *MockPacketDecoderMockRecorder
+        + Decode(data []byte) ([]*packet.Packet, error)
+
+    }
+    class MockPacketDecoderMockRecorder << (S,Aquamarine) >> {
+        - mock *MockPacketDecoder
+
+        + Decode(data <font color=blue>interface</font>{}) *gomock.Call
+
+    }
+    class MockPacketEncoder << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockPacketEncoderMockRecorder
+
+        + EXPECT() *MockPacketEncoderMockRecorder
+        + Encode(typ packet.Type, data []byte) ([]byte, error)
+
+    }
+    class MockPacketEncoderMockRecorder << (S,Aquamarine) >> {
+        - mock *MockPacketEncoder
+
+        + Encode(typ <font color=blue>interface</font>{}, data <font color=blue>interface</font>{}) *gomock.Call
+
+    }
+}
+
+"message.Encoder" <|-- "implements""mocks.MockEncoder"
+"codec.PacketDecoder" <|-- "implements""mocks.MockPacketDecoder"
+"codec.PacketEncoder" <|-- "implements""mocks.MockPacketEncoder"
+
+
+namespace packet {
+    class Packet << (S,Aquamarine) >> {
+        + Type Type
+        + Length int
+        + Data []byte
+
+        + String() string
+
+    }
+    class packet.Type << (T, #FF7700) >>  {
+    }
+}
+
+
+"packet.Packet""uses" o-- "packet.Type"
+
+"__builtin__.byte" #.. "alias of""message.Type"
+"__builtin__.byte" #.. "alias of""packet.Type"
+@enduml

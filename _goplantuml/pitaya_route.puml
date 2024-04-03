@@ -1,0 +1,16 @@
+@startuml
+title pitaya_route
+namespace route {
+    class Route << (S,Aquamarine) >> {
+        + SvType string
+        + Service string
+        + Method string
+
+        + String() string
+        + Short() string
+
+    }
+}
+
+
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+title pitaya_timer
+namespace timer {
+    interface Condition  {
+        + Check(now time.Time) bool
+
+    }
+    class Timer << (S,Aquamarine) >> {
+        - fn Func
+        - createAt int64
+        - interval time.Duration
+        - condition Condition
+        - elapse int64
+        - closed int32
+        - counter int
+
+        + ID int64
+
+        + SetCondition(condition Condition) 
+        + Stop() 
+
+    }
+    class timer.Func << (T, #FF7700) >>  {
+    }
+}
+
+
+"timer.<font color=blue>func</font>() " #.. "timer.Func"
+@enduml

@@ -1,0 +1,49 @@
+@startuml
+title pitaya_acceptorwrapper
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: false
+end legend
+namespace acceptorwrapper {
+    class BaseWrapper << (S,Aquamarine) >> {
+        - connChan <font color=blue>chan</font> acceptor.PlayerConn
+        - wrapConn <font color=blue>func</font>(acceptor.PlayerConn) acceptor.PlayerConn
+
+        - pipe() 
+
+        + ListenAndServe() 
+        + GetConnChan() <font color=blue>chan</font> acceptor.PlayerConn
+
+    }
+    class RateLimiter << (S,Aquamarine) >> {
+        - reporters []metrics.Reporter
+        - limit int
+        - interval time.Duration
+        - times list.List
+        - forceDisable bool
+
+        - shouldRateLimit(now time.Time) bool
+
+        + GetNextMessage() ([]byte, error)
+
+    }
+    class RateLimitingWrapper << (S,Aquamarine) >> {
+        + Wrap(a acceptor.Acceptor) acceptor.Acceptor
+
+    }
+    interface Wrapper  {
+        + Wrap( acceptor.Acceptor) acceptor.Acceptor
+
+    }
+}
+"acceptor.Acceptor" *-- "extends""acceptorwrapper.BaseWrapper"
+"acceptor.PlayerConn" *-- "extends""acceptorwrapper.RateLimiter"
+"acceptorwrapper.BaseWrapper" *-- "extends""acceptorwrapper.RateLimitingWrapper"
+
+"acceptorwrapper.Wrapper" <|-- "implements""acceptorwrapper.RateLimitingWrapper"
+
+
+@enduml

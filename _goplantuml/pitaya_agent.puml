@@ -1,0 +1,207 @@
+@startuml
+title pitaya_agent
+legend
+<u><b>Legend</b></u>
+Render Aggregations: true
+Render Fields: true
+Render Methods: true
+Private Aggregations: false
+end legend
+namespace agent {
+    interface Agent  {
+        + GetSession() session.Session
+        + Push(route string, v <font color=blue>interface</font>{}) error
+        + ResponseMID(ctx context.Context, mid uint, v <font color=blue>interface</font>{}, isError ...bool) error
+        + Close() error
+        + RemoteAddr() net.Addr
+        + String() string
+        + GetStatus() int32
+        + Kick(ctx context.Context) error
+        + SetLastAt() 
+        + SetStatus(state int32) 
+        + Handle() 
+        + IPVersion() string
+        + SendHandshakeResponse() error
+        + SendHandshakeErrorResponse() error
+        + SendRequest(ctx context.Context, serverID string, route string, v <font color=blue>interface</font>{}) (*protos.Response, error)
+        + AnswerWithError(ctx context.Context, mid uint, err error) 
+
+    }
+    interface AgentFactory  {
+        + CreateAgent(conn net.Conn) Agent
+
+    }
+    class Remote << (S,Aquamarine) >> {
+        - chDie <font color=blue>chan</font> <font color=blue>struct</font>{}
+        - messageEncoder message.Encoder
+        - encoder codec.PacketEncoder
+        - frontendID string
+        - reply string
+        - rpcClient cluster.RPCClient
+        - serializer serialize.Serializer
+        - serviceDiscovery cluster.ServiceDiscovery
+
+        + Session session.Session
+
+        - serialize(m pendingMessage) ([]byte, error)
+        - send(m pendingMessage, to string) error
+        - sendPush(m pendingMessage, userID string, sv *cluster.Server) error
+
+        + Kick(ctx context.Context) error
+        + Push(route string, v <font color=blue>interface</font>{}) error
+        + ResponseMID(ctx context.Context, mid uint, v <font color=blue>interface</font>{}, isError ...bool) error
+        + Close() error
+        + RemoteAddr() net.Addr
+        + SendRequest(ctx context.Context, serverID string, reqRoute string, v <font color=blue>interface</font>{}) (*protos.Response, error)
+
+    }
+    class agentFactoryImpl << (S,Aquamarine) >> {
+        - sessionPool session.SessionPool
+        - appDieChan <font color=blue>chan</font> bool
+        - decoder codec.PacketDecoder
+        - encoder codec.PacketEncoder
+        - heartbeatTimeout time.Duration
+        - messageEncoder message.Encoder
+        - messagesBufferSize int
+        - metricsReporters []metrics.Reporter
+        - serializer serialize.Serializer
+
+        + CreateAgent(conn net.Conn) Agent
+
+    }
+    class agentImpl << (S,Aquamarine) >> {
+        - sessionPool session.SessionPool
+        - appDieChan <font color=blue>chan</font> bool
+        - chDie <font color=blue>chan</font> <font color=blue>struct</font>{}
+        - chSend <font color=blue>chan</font> pendingWrite
+        - chStopHeartbeat <font color=blue>chan</font> <font color=blue>struct</font>{}
+        - chStopWrite <font color=blue>chan</font> <font color=blue>struct</font>{}
+        - closeMutex sync.Mutex
+        - conn net.Conn
+        - decoder codec.PacketDecoder
+        - encoder codec.PacketEncoder
+        - heartbeatTimeout time.Duration
+        - lastAt int64
+        - messageEncoder message.Encoder
+        - messagesBufferSize int
+        - metricsReporters []metrics.Reporter
+        - serializer serialize.Serializer
+        - state int32
+
+        + Session session.Session
+
+        - getMessageFromPendingMessage(pm pendingMessage) (*message.Message, error)
+        - packetEncodeMessage(m *message.Message) ([]byte, error)
+        - send(pendingMsg pendingMessage) error
+        - heartbeat() 
+        - onSessionClosed(s session.Session) 
+        - write() 
+        - reportChannelSize() 
+
+        + GetSession() session.Session
+        + Push(route string, v <font color=blue>interface</font>{}) error
+        + ResponseMID(ctx context.Context, mid uint, v <font color=blue>interface</font>{}, isError ...bool) error
+        + Close() error
+        + RemoteAddr() net.Addr
+        + String() string
+        + GetStatus() int32
+        + Kick(ctx context.Context) error
+        + SetLastAt() 
+        + SetStatus(state int32) 
+        + Handle() 
+        + IPVersion() string
+        + SendHandshakeResponse() error
+        + SendHandshakeErrorResponse() error
+        + SendRequest(ctx context.Context, serverID string, route string, v <font color=blue>interface</font>{}) (*protos.Response, error)
+        + AnswerWithError(ctx context.Context, mid uint, err error) 
+
+    }
+    class pendingMessage << (S,Aquamarine) >> {
+        - ctx context.Context
+        - typ message.Type
+        - route string
+        - mid uint
+        - payload <font color=blue>interface</font>{}
+        - err bool
+
+    }
+    class pendingWrite << (S,Aquamarine) >> {
+        - ctx context.Context
+        - data []byte
+        - err error
+
+    }
+}
+
+"agent.AgentFactory" <|-- "implements""agent.agentFactoryImpl"
+"agent.Agent" <|-- "implements""agent.agentImpl"
+
+"agent.Remote""uses" o-- "session.Session"
+"agent.agentImpl""uses" o-- "session.Session"
+
+namespace mocks {
+    class MockAgent << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockAgentMockRecorder
+
+        + EXPECT() *MockAgentMockRecorder
+        + AnswerWithError(arg0 context.Context, arg1 uint, arg2 error) 
+        + Close() error
+        + GetSession() session.Session
+        + GetStatus() int32
+        + Handle() 
+        + IPVersion() string
+        + Kick(arg0 context.Context) error
+        + Push(arg0 string, arg1 <font color=blue>interface</font>{}) error
+        + RemoteAddr() net.Addr
+        + ResponseMID(arg0 context.Context, arg1 uint, arg2 <font color=blue>interface</font>{}, arg3 ...bool) error
+        + SendHandshakeErrorResponse() error
+        + SendHandshakeResponse() error
+        + SendRequest(arg0 context.Context, arg1 string, arg2 string, arg3 <font color=blue>interface</font>{}) (*protos.Response, error)
+        + SetLastAt() 
+        + SetStatus(arg0 int32) 
+        + String() string
+
+    }
+    class MockAgentFactory << (S,Aquamarine) >> {
+        - ctrl *gomock.Controller
+        - recorder *MockAgentFactoryMockRecorder
+
+        + EXPECT() *MockAgentFactoryMockRecorder
+        + CreateAgent(arg0 net.Conn) agent.Agent
+
+    }
+    class MockAgentFactoryMockRecorder << (S,Aquamarine) >> {
+        - mock *MockAgentFactory
+
+        + CreateAgent(arg0 <font color=blue>interface</font>{}) *gomock.Call
+
+    }
+    class MockAgentMockRecorder << (S,Aquamarine) >> {
+        - mock *MockAgent
+
+        + AnswerWithError(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}) *gomock.Call
+        + Close() *gomock.Call
+        + GetSession() *gomock.Call
+        + GetStatus() *gomock.Call
+        + Handle() *gomock.Call
+        + IPVersion() *gomock.Call
+        + Kick(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + Push(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}) *gomock.Call
+        + RemoteAddr() *gomock.Call
+        + ResponseMID(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}, arg3 ...<font color=blue>interface</font>{}) *gomock.Call
+        + SendHandshakeErrorResponse() *gomock.Call
+        + SendHandshakeResponse() *gomock.Call
+        + SendRequest(arg0 <font color=blue>interface</font>{}, arg1 <font color=blue>interface</font>{}, arg2 <font color=blue>interface</font>{}, arg3 <font color=blue>interface</font>{}) *gomock.Call
+        + SetLastAt() *gomock.Call
+        + SetStatus(arg0 <font color=blue>interface</font>{}) *gomock.Call
+        + String() *gomock.Call
+
+    }
+}
+
+"agent.Agent" <|-- "implements""mocks.MockAgent"
+"agent.AgentFactory" <|-- "implements""mocks.MockAgentFactory"
+
+
+@enduml
