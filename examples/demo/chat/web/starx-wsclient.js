@@ -31,6 +31,7 @@
     this._callbacks = this._callbacks || {};
     (this._callbacks[event] = this._callbacks[event] || [])
       .push(fn);
+    console.log("addEventListener:" + event)
     return this;
   };
 
@@ -300,6 +301,7 @@
       reset();
       var obj = Package.encode(Package.TYPE_HANDSHAKE, Protocol.strencode(JSON.stringify(handshakeBuffer)));
       send(obj);
+      console.log("Package.TYPE_HANDSHAKE")
     };
     var onmessage = function(event) {
       processPackage(Package.decode(event.data), cb);
@@ -315,7 +317,7 @@
     var onclose = function(event) {
       starx.emit('close',event);
       starx.emit('disconnect', event);
-      console.log('socket close: ', event);
+      //console.log('socket close: ' + event);
       if(!!params.reconnect && reconnectAttempts < maxReconnectAttempts) {
         reconnect = true;
         reconnectAttempts++;
@@ -441,6 +443,7 @@
   };
 
   var handshake = function(data) {
+    console.log("handshake() ")
     data = JSON.parse(Protocol.strdecode(data));
     if(data.code === RES_OLD_CLIENT) {
       starx.emit('error', 'client version not fullfill');
@@ -466,6 +469,7 @@
     if(decode) {
       msg = decode(msg);
     }
+    console.log("onData" + msg)
     processMessage(starx, msg);
   };
 
@@ -483,9 +487,11 @@
     if(Array.isArray(msgs)) {
       for(var i=0; i<msgs.length; i++) {
         var msg = msgs[i];
+        console.log("processPackage, msg.type.arraytype:", msg.type)
         handlers[msg.type](msg.body);
       }
     } else {
+      console.log("processPackage, msg.type:", msgs.type)
       handlers[msgs.type](msgs.body);
     }
   };
@@ -505,6 +511,7 @@
       return;
     }
 
+    console.log("processMessage:", msg.id)
     cb(msg.body);
 
   };

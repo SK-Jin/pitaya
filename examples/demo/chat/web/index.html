@@ -58,8 +58,8 @@
         v.messages.push({name:'system', content: "members: "+data.members});
     };
 
-    starx.init({host: '127.0.0.1', port: 3250, path: '/'}, function () {
-        console.log("initialized");
+    starx.init({host: '127.0.0.1', port: 3350, path: '/'}, function () {
+        console.log("startx initialized");
         starx.on("onNewUser", onNewUser);
         starx.on("onMembers", onMembers);
         starx.request("room.join", {}, join);

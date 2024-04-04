@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,12 +11,15 @@ import (
 
 	"strings"
 
+	"github.com/sirupsen/logrus"
 	"github.com/topfreegames/pitaya/v2"
 	"github.com/topfreegames/pitaya/v2/acceptor"
 	"github.com/topfreegames/pitaya/v2/component"
 	"github.com/topfreegames/pitaya/v2/config"
 	"github.com/topfreegames/pitaya/v2/groups"
 	"github.com/topfreegames/pitaya/v2/logger"
+	"github.com/topfreegames/pitaya/v2/logger/interfaces"
+	logruswrapper "github.com/topfreegames/pitaya/v2/logger/logrus"
 	"github.com/topfreegames/pitaya/v2/timer"
 )
 
@@ -104,10 +108,31 @@ func (r *Room) Message(ctx context.Context, msg *UserMessage) {
 
 var app pitaya.Pitaya
 
+func initLoggerChat() interfaces.Logger {
+	plog := logrus.New()
+	plog.Formatter = new(logrus.TextFormatter)
+	plog.Level = logrus.DebugLevel
+
+	log := plog.WithFields(logrus.Fields{
+		"source": "pitaya_example_chat",
+	})
+	return logruswrapper.NewWithFieldLogger(log)
+}
+
 func main() {
+	// acceptPort, listenPort 값 변경
+	port := flag.Int("port", 3350, "the port to listen")
+	flag.Parse()
+	acceptPort := fmt.Sprintf(":%d", *port)
+	fmt.Println("acceptPort:", acceptPort)
+	listenPort := fmt.Sprintf(":%d", *port+1)
+	fmt.Printf("listenPort: http://localhost:%d/web/", *port+1)
+
 	conf := configApp()
+
 	builder := pitaya.NewDefaultBuilder(true, "chat", pitaya.Cluster, map[string]string{}, *conf)
-	builder.AddAcceptor(acceptor.NewWSAcceptor(":3250"))
+	//builder.AddAcceptor(acceptor.NewWSAcceptor(":3250"))
+	builder.AddAcceptor(acceptor.NewWSAcceptor(acceptPort))
 	builder.Groups = groups.NewMemoryGroupService(builder.Config.Groups.Memory)
 	app = builder.Build()
 
@@ -127,9 +152,12 @@ func main() {
 
 	log.SetFlags(log.LstdFlags | log.Llongfile)
 
+	pitaya.SetLogger(initLoggerChat()) // change logger source name
+
 	http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web"))))
 
-	go http.ListenAndServe(":3251", nil)
+	//go http.ListenAndServe(":3251", nil)
+	go http.ListenAndServe(listenPort, nil)
 
 	app.Start()
 }
